@@ -1,0 +1,94 @@
+import * as React from "react";
+import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  onClear?: () => void;
+}
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  (
+    {
+      className,
+      type,
+      value,
+      defaultValue,
+      onChange,
+      onClear,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
+    const [uncontrolledValue, setUncontrolledValue] = React.useState(
+      defaultValue?.toString() ?? ""
+    );
+    const isControlled = value !== undefined;
+    const currentValue = isControlled ? value : uncontrolledValue;
+    const hasValue = String(currentValue ?? "").length > 0;
+    const canClear =
+      type !== "number" &&
+      !disabled &&
+      !props.readOnly &&
+      hasValue &&
+      Boolean(onChange || onClear);
+
+    const handleClear = (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (onClear) {
+        onClear();
+        return;
+      }
+      if (onChange) {
+        const event = {
+          target: { value: "" },
+          currentTarget: { value: "" },
+        } as React.ChangeEvent<HTMLInputElement>;
+        onChange(event);
+      }
+      if (!isControlled) {
+        setUncontrolledValue("");
+      }
+    };
+
+    return (
+      <div className="relative w-full">
+        <input
+          type={type}
+          className={cn(
+            "flex h-9 w-full rounded-md border border-border bg-card px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+            canClear && "pr-9",
+            className
+          )}
+          ref={ref}
+          value={value}
+          defaultValue={defaultValue}
+          onChange={(e) => {
+            if (!isControlled) {
+              setUncontrolledValue(e.target.value);
+            }
+            onChange?.(e);
+          }}
+          disabled={disabled}
+          {...props}
+        />
+        {canClear && (
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={handleClear}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm text-muted-foreground transition-colors hover:text-foreground"
+            aria-label="清除"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+    );
+  }
+);
+Input.displayName = "Input";
+
+export { Input };
