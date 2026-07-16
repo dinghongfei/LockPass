@@ -40,6 +40,9 @@ nohup.out
 # runtime data
 /data/
 
+# production / server-local user overrides (keep defaults in users.json)
+/config/users.local.json
+
 # vercel
 .vercel
 

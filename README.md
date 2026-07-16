@@ -62,7 +62,21 @@ SESSION_SECRET=粘贴第二次生成的64位hex
 
 ### 3. 配置用户
 
-LockPass 使用 `config/users.json` 预置登录账号，**不支持注册**。文件中存的是 bcrypt 哈希，不是明文密码。
+LockPass 使用预置登录账号，**不支持注册**。文件中存的是 bcrypt 哈希，不是明文密码。
+
+加载优先级：
+
+1. 环境变量 `USERS_FILE` 指定的路径
+2. `config/users.local.json`（若存在；**已被 gitignore**，适合生产机改密）
+3. `config/users.json`（仓库默认，`admin` / `admin123`）
+
+本地试用可直接用默认账号。**生产环境**请复制后改密，避免改到会被提交的 `users.json`：
+
+```bash
+cp config/users.json config/users.local.json
+npm run hash-password -- your-password
+# 将输出的 hash 写入 config/users.local.json 的 passwordHash，然后重启
+```
 
 **生成登录密码 hash**（将 `your-password` 换成你要设置的登录密码）：
 
@@ -76,7 +90,7 @@ npm run hash-password -- your-password
 npm run hash-password -- MySecurePass123
 ```
 
-终端会输出一行以 `$2b$10$` 开头的 hash，写入 `config/users.json` 的 `passwordHash` 字段：
+终端会输出一行以 `$2b$10$` 开头的 hash，写入对应用户文件的 `passwordHash` 字段：
 
 ```json
 [
@@ -89,8 +103,6 @@ npm run hash-password -- MySecurePass123
 ```
 
 保存文件后**重启应用**，使用 `username` 与刚才设置的明文密码登录。
-
-默认已内置用户 `admin` / `admin123`，本地试用可跳过本步；**生产环境务必修改**。
 
 ### 4. 启动
 
@@ -167,6 +179,7 @@ NPM_SCRIPT=start:db ./scripts/service.sh start
 | `ENCRYPTION_KEY` | AES-256 加密密钥（64 位 hex） | 必填 |
 | `SESSION_SECRET` | 会话加密密钥 | 必填 |
 | `SECURE_COOKIES` | Cookie secure 标志 | `false` |
+| `USERS_FILE` | 用户配置文件路径（覆盖默认加载逻辑） | 空则按 users.local.json → users.json |
 | `DATABASE_URL` | PostgreSQL 连接串 | `database` 模式必填 |
 | `DATA_DIR` | 本地数据目录 | `./data` |
 
