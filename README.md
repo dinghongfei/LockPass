@@ -126,15 +126,17 @@ npm run start:text   # 文本文件
 npm run start:db     # PostgreSQL
 ```
 
-### 服务器后台部署（nohup）
+### 服务器后台部署
 
-适合单机自托管 / 内网部署。先完成上文的依赖安装、环境变量与用户配置，再构建并后台启动：
+适合单机自托管 / 内网部署。先完成上文的依赖安装、环境变量与用户配置，再构建并用脚本管理进程：
 
 ```bash
 npm run build
 
-# 后台运行，标准输出与错误输出写入 app.log
-nohup npm run start > app.log 2>&1 &
+./scripts/service.sh start     # 后台启动，日志写入 app.log
+./scripts/service.sh status    # 查看状态 / PID
+./scripts/service.sh stop      # 停止全部关联进程（npm / sh / next-server）
+./scripts/service.sh restart   # 重启
 ```
 
 常用操作：
@@ -143,20 +145,17 @@ nohup npm run start > app.log 2>&1 &
 # 查看日志
 tail -f app.log
 
-# 查看当前应用 PID
-pgrep -f "next start"
+# 指定端口启动
+PORT=8080 ./scripts/service.sh start
 
-# 查看 PID 及完整命令行
-pgrep -af "next start"
-
-# 停止服务（按实际 PID 替换）
-kill <pid>
+# 使用文本存储 / PostgreSQL 启动
+NPM_SCRIPT=start:text ./scripts/service.sh start
+NPM_SCRIPT=start:db ./scripts/service.sh start
 ```
 
 说明：
 
-- 使用 `>` 重定向后，日志写入指定的 `app.log`，不会再生成 `nohup.out`
-- 默认监听 `3000` 端口；可通过 `PORT=8080 nohup npm run start > app.log 2>&1 &` 修改
+- `stop` 会按工作目录匹配并清理本项目相关的全部进程，避免只杀父进程后 `next-server` 残留
 - 进程在 SSH 断开后继续运行，但**服务器重启后不会自动拉起**；需要开机自启或崩溃自动恢复时，建议改用 systemd / pm2
 - 公网访问时请在前面加反向代理（Nginx / Caddy 等）并启用 HTTPS，同时设置 `SECURE_COOKIES=true`
 

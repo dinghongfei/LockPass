@@ -31,6 +31,7 @@ yarn-error.log*
 .pnpm-debug.log*
 app.log
 nohup.out
+.service.pid
 
 # env files (can opt-in for committing if needed)
 .env*
