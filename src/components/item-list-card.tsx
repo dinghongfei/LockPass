@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { Group, VaultItem } from "@/lib/types";
 import { ITEM_STATUS_LABELS, ITEM_TYPE_LABELS } from "@/lib/types";
 import { getItemListFields } from "@/lib/item-list-preview";
+import { copyText } from "@/lib/clipboard";
 import { cn } from "@/lib/utils";
 
 interface ItemListCardProps {
@@ -32,7 +33,7 @@ function ListCopyField({
   const handleCopy = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    await navigator.clipboard.writeText(value);
+    await copyText(value);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

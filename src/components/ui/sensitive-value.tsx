@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Copy, Eye } from "lucide-react";
+import { copyText } from "@/lib/clipboard";
 import { cn } from "@/lib/utils";
 
 interface SensitiveValueProps {
@@ -32,7 +33,7 @@ export function SensitiveValue({
   const display = revealed ? value : "••••••••";
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(value);
+    await copyText(value);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

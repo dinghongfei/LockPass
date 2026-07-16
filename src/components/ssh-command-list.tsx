@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Copy } from "lucide-react";
+import { copyText } from "@/lib/clipboard";
 import { buildSshCommands } from "@/lib/it-commands";
 
 interface SshCommandListProps {
@@ -21,7 +22,7 @@ export function SshCommandList({
   if (commands.length === 0) return null;
 
   const handleCopy = async (command: string, index: number) => {
-    await navigator.clipboard.writeText(command);
+    await copyText(command);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2000);
   };

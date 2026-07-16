@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { copyText } from "@/lib/clipboard";
 import {
   DEFAULT_PASSWORD_OPTIONS,
   type PasswordGeneratorOptions,
@@ -52,7 +53,7 @@ export function PasswordGenerator({
 
   const handleCopy = async () => {
     if (!password) return;
-    await navigator.clipboard.writeText(password);
+    await copyText(password);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
