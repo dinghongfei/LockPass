@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Eye, X } from "lucide-react";
+import { useT } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 import type { InputProps } from "@/components/ui/input";
 
@@ -18,6 +19,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
+    const t = useT();
     const [revealed, setRevealed] = React.useState(false);
     const [uncontrolledValue, setUncontrolledValue] = React.useState(
       defaultValue?.toString() ?? ""
@@ -77,7 +79,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, InputProps>(
               tabIndex={-1}
               onClick={handleClear}
               className="rounded-sm text-muted-foreground transition-colors hover:text-foreground"
-              aria-label="清除"
+              aria-label={t("sensitive.clear")}
             >
               <X className="h-4 w-4" />
             </button>
@@ -86,7 +88,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, InputProps>(
             type="button"
             tabIndex={-1}
             className="select-none rounded-sm text-muted-foreground transition-colors hover:text-foreground"
-            aria-label="按住显示密码"
+            aria-label={t("sensitive.holdToRevealPassword")}
             onMouseDown={(e) => {
               e.preventDefault();
               show();

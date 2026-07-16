@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Copy } from "lucide-react";
 import { copyText } from "@/lib/clipboard";
 import { buildSshCommands } from "@/lib/it-commands";
+import { useT } from "@/lib/i18n/provider";
 
 interface SshCommandListProps {
   username?: string;
@@ -16,6 +17,7 @@ export function SshCommandList({
   privateIp,
   publicIp,
 }: SshCommandListProps) {
+  const t = useT();
   const commands = buildSshCommands(username, privateIp, publicIp);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
@@ -29,15 +31,15 @@ export function SshCommandList({
 
   return (
     <div className="space-y-2">
-      <p className="text-sm text-muted-foreground">SSH 登录指令</p>
+      <p className="text-sm text-muted-foreground">{t("ssh.title")}</p>
       <ul className="space-y-2">
         {commands.map((cmd, index) => (
           <li
-            key={cmd.label}
+            key={cmd.network}
             className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2"
           >
             <span className="shrink-0 text-xs text-muted-foreground">
-              {cmd.label}
+              {t(`ssh.${cmd.network}`)}
             </span>
             <code className="flex-1 break-all font-mono text-sm">
               {cmd.command}
@@ -45,14 +47,16 @@ export function SshCommandList({
             <button
               type="button"
               className="shrink-0 rounded-sm text-muted-foreground transition-colors hover:text-foreground"
-              aria-label={copiedIndex === index ? "已复制" : "复制"}
+              aria-label={
+                copiedIndex === index ? t("common.copied") : t("common.copy")
+              }
               onClick={() => handleCopy(cmd.command, index)}
             >
               <Copy className="h-4 w-4" />
             </button>
             {copiedIndex === index && (
               <span className="shrink-0 text-xs text-muted-foreground">
-                已复制
+                {t("common.copied")}
               </span>
             )}
           </li>

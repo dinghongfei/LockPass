@@ -8,7 +8,11 @@ export function isSystemDiscardedGroup(groupId: string): boolean {
 }
 
 export function isReservedGroupName(name: string): boolean {
-  return name.trim() === DISCARDED_GROUP_NAME;
+  const normalized = name.trim().toLowerCase();
+  return (
+    normalized === DISCARDED_GROUP_NAME.toLowerCase() ||
+    normalized === "discarded"
+  );
 }
 
 export function createDiscardedGroupStored(userId: string): StoredGroup {

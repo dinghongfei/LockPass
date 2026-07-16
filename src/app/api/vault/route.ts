@@ -1,16 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth/session";
+import {
+  localizeExportDataForLocale,
+  normalizeImportedGroup,
+  resolveExportLocale,
+} from "@/lib/i18n/export-locale";
 import { getStorage } from "@/lib/storage";
-import type { ExportData } from "@/lib/types";
+import type { ExportData, Group } from "@/lib/types";
 import { badRequest, serverError, unauthorized } from "@/lib/api-utils";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await requireAuth();
     const storage = getStorage();
     const data = await storage.exportVault(session.userId);
-    return NextResponse.json(data);
+    const locale = resolveExportLocale(
+      request.nextUrl.searchParams.get("locale"),
+      request.headers.get("accept-language")
+    );
+    return NextResponse.json(localizeExportDataForLocale(data, locale));
   } catch (e) {
     if ((e as Error).message === "Unauthorized") return unauthorized();
     return serverError();
@@ -32,9 +41,12 @@ export async function POST(request: NextRequest) {
     const session = await requireAuth();
     const body = importSchema.parse(await request.json());
     const storage = getStorage();
+    const groups = (body.data.groups as Group[]).map((group) =>
+      normalizeImportedGroup(group)
+    );
     await storage.importVault(
       session.userId,
-      body.data as ExportData,
+      { ...(body.data as ExportData), groups },
       body.mode
     );
     return NextResponse.json({ ok: true });

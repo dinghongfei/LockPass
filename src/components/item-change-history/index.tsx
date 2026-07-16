@@ -7,6 +7,10 @@ import {
   getFieldLabel,
   isSensitiveField,
 } from "@/lib/item-changes";
+import type { Locale } from "@/lib/i18n/config";
+import { useI18n } from "@/lib/i18n/provider";
+import type { TranslateFn } from "@/lib/i18n/provider";
+import { isSystemDiscardedGroup } from "@/lib/system-groups";
 import type { Group, ItemChangeRecord } from "@/lib/types";
 
 interface ItemChangeHistoryProps {
@@ -14,9 +18,10 @@ interface ItemChangeHistoryProps {
   groups: Group[];
 }
 
-function formatDateTime(date: Date | string): string {
+function formatDateTime(date: Date | string, locale: Locale): string {
   const value = date instanceof Date ? date : new Date(date);
-  return value.toLocaleString("zh-CN", {
+  const localeTag = locale === "zh-CN" ? "zh-CN" : "en-US";
+  return value.toLocaleString(localeTag, {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -31,13 +36,15 @@ function ChangeFieldLine({
   oldValue,
   newValue,
   groupNames,
+  t,
 }: {
   field: string;
   oldValue?: string;
   newValue?: string;
   groupNames: Record<string, string>;
+  t: TranslateFn;
 }) {
-  const label = getFieldLabel(field);
+  const label = getFieldLabel(field, t);
   const sensitive = isSensitiveField(field);
 
   if (sensitive) {
@@ -58,8 +65,8 @@ function ChangeFieldLine({
     );
   }
 
-  const formattedOld = formatFieldValue(field, oldValue, groupNames);
-  const formattedNew = formatFieldValue(field, newValue, groupNames);
+  const formattedOld = formatFieldValue(field, oldValue, groupNames, t);
+  const formattedNew = formatFieldValue(field, newValue, groupNames, t);
   const hasOld = oldValue !== undefined && oldValue !== "";
 
   return (
@@ -79,7 +86,13 @@ function ChangeFieldLine({
 }
 
 export function ItemChangeHistory({ changes, groups }: ItemChangeHistoryProps) {
-  const groupNames = Object.fromEntries(groups.map((g) => [g.id, g.name]));
+  const { locale, t } = useI18n();
+  const groupNames = Object.fromEntries(
+    groups.map((g) => [
+      g.id,
+      isSystemDiscardedGroup(g.id) ? t("groups.discarded") : g.name,
+    ])
+  );
 
   if (changes.length === 0) {
     return null;
@@ -87,12 +100,12 @@ export function ItemChangeHistory({ changes, groups }: ItemChangeHistoryProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold">变更记录</h2>
+      <h2 className="text-lg font-semibold">{t("item.changeHistory")}</h2>
       {changes.map((record) => (
         <Card key={record.id}>
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium text-muted-foreground">
-              {formatDateTime(record.createdAt)}
+              {formatDateTime(record.createdAt, locale)}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -103,6 +116,7 @@ export function ItemChangeHistory({ changes, groups }: ItemChangeHistoryProps) {
                 oldValue={change.oldValue}
                 newValue={change.newValue}
                 groupNames={groupNames}
+                t={t}
               />
             ))}
           </CardContent>

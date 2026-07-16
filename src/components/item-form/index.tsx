@@ -16,8 +16,9 @@ import {
 } from "@/components/ui/dialog";
 import { PasswordGenerator } from "@/components/password-generator";
 import { SshCommandList } from "@/components/ssh-command-list";
+import { useT } from "@/lib/i18n/provider";
 import type { Group, ItemType } from "@/lib/types";
-import { ITEM_TYPE_LABELS } from "@/lib/types";
+import { ITEM_TYPES } from "@/lib/types";
 import { isUserGroup } from "@/lib/system-groups";
 
 interface ItemFormProps {
@@ -72,6 +73,7 @@ const emptyPayloads: Record<ItemType, Record<string, string>> = {
 };
 
 export function ItemForm({ groups, initial, onSuccess, onCancel }: ItemFormProps) {
+  const t = useT();
   const selectableGroups = groups.filter(isUserGroup);
   const [groupId, setGroupId] = useState(
     initial?.groupId && isUserGroup({ id: initial.groupId })
@@ -101,7 +103,7 @@ export function ItemForm({ groups, initial, onSuccess, onCancel }: ItemFormProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!groupId) {
-      setError("请先创建并选择一个分组");
+      setError(t("item.selectGroupFirst"));
       return;
     }
     setLoading(true);
@@ -116,7 +118,7 @@ export function ItemForm({ groups, initial, onSuccess, onCancel }: ItemFormProps
     const data = await res.json();
     setLoading(false);
     if (!res.ok) {
-      setError(data.error || "保存失败");
+      setError(data.error || t("item.saveFailed"));
       return;
     }
     onSuccess();
@@ -147,7 +149,7 @@ export function ItemForm({ groups, initial, onSuccess, onCancel }: ItemFormProps
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>生成密码</DialogTitle>
+                <DialogTitle>{t("item.generatePassword")}</DialogTitle>
               </DialogHeader>
               <PasswordGenerator
                 compact
@@ -180,22 +182,22 @@ export function ItemForm({ groups, initial, onSuccess, onCancel }: ItemFormProps
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>条目类型</Label>
+          <Label>{t("item.type")}</Label>
           <select
             className="flex h-9 w-full rounded-md border border-border bg-card px-3 text-sm"
             value={type}
             onChange={(e) => handleTypeChange(e.target.value as ItemType)}
             disabled={!!initial?.id}
           >
-            {(Object.keys(ITEM_TYPE_LABELS) as ItemType[]).map((t) => (
-              <option key={t} value={t}>
-                {ITEM_TYPE_LABELS[t]}
+            {ITEM_TYPES.map((itemType) => (
+              <option key={itemType} value={itemType}>
+                {t(`itemTypes.${itemType}`)}
               </option>
             ))}
           </select>
         </div>
         <div className="space-y-2">
-          <Label>所属分组</Label>
+          <Label>{t("item.group")}</Label>
           <select
             className="flex h-9 w-full rounded-md border border-border bg-card px-3 text-sm"
             value={groupId}
@@ -211,28 +213,28 @@ export function ItemForm({ groups, initial, onSuccess, onCancel }: ItemFormProps
       </div>
 
       <div className="space-y-2">
-        <Label>名称</Label>
+        <Label>{t("item.name")}</Label>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="条目标题"
+          placeholder={t("item.namePlaceholder")}
           required
         />
       </div>
 
       {type === "website" && (
         <>
-          {textField("url", "网站地址", "https://example.com")}
-          {textField("username", "用户名")}
-          {passwordField("password", "密码")}
+          {textField("url", t("fields.url"), "https://example.com")}
+          {textField("username", t("fields.username"))}
+          {passwordField("password", t("fields.password"))}
         </>
       )}
 
       {type === "card" && (
         <>
-          {textField("cardName", "卡券名称")}
+          {textField("cardName", t("fields.cardName"))}
           <div className="space-y-2">
-            <Label>卡号</Label>
+            <Label>{t("fields.cardNumber")}</Label>
             <Input
               value={payload.cardNumber || ""}
               onChange={(e) => updatePayload("cardNumber", e.target.value)}
@@ -240,9 +242,9 @@ export function ItemForm({ groups, initial, onSuccess, onCancel }: ItemFormProps
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
-            {textField("expiry", "有效期", "MM/YY")}
+            {textField("expiry", t("fields.expiry"), "MM/YY")}
             <div className="space-y-2">
-              <Label>CVV</Label>
+              <Label>{t("fields.cvv")}</Label>
               <Input
                 value={payload.cvv || ""}
                 onChange={(e) => updatePayload("cvv", e.target.value)}
@@ -250,7 +252,7 @@ export function ItemForm({ groups, initial, onSuccess, onCancel }: ItemFormProps
               />
             </div>
             <div className="space-y-2">
-              <Label>PIN</Label>
+              <Label>{t("fields.pin")}</Label>
               <Input
                 value={payload.pin || ""}
                 onChange={(e) => updatePayload("pin", e.target.value)}
@@ -258,20 +260,20 @@ export function ItemForm({ groups, initial, onSuccess, onCancel }: ItemFormProps
               />
             </div>
           </div>
-          {textField("holderName", "持卡人")}
+          {textField("holderName", t("fields.holderName"))}
         </>
       )}
 
       {type === "it_server" && (
         <>
-          {textField("instanceId", "实例 ID")}
-          {textField("instanceName", "实例名称")}
+          {textField("instanceId", t("fields.instanceId"))}
+          {textField("instanceName", t("fields.instanceName"))}
           <div className="grid gap-4 sm:grid-cols-2">
-            {textField("privateIp", "内网 IP")}
-            {textField("publicIp", "公网 IP")}
+            {textField("privateIp", t("fields.privateIp"))}
+            {textField("publicIp", t("fields.publicIp"))}
           </div>
-          {textField("username", "用户名")}
-          {passwordField("password", "密码")}
+          {textField("username", t("fields.username"))}
+          {passwordField("password", t("fields.password"))}
           <SshCommandList
             username={payload.username}
             privateIp={payload.privateIp}
@@ -282,26 +284,26 @@ export function ItemForm({ groups, initial, onSuccess, onCancel }: ItemFormProps
 
       {type === "it_ram" && (
         <>
-          {textField("platform", "平台")}
-          {textField("accountName", "账号名称")}
-          {textField("username", "用户名")}
-          {passwordField("password", "密码")}
-          {passwordField("accessKeyId", "AccessKey ID（AK）", false)}
-          {passwordField("accessKeySecret", "AccessKey Secret（SK）", false)}
+          {textField("platform", t("fields.platform"))}
+          {textField("accountName", t("fields.accountName"))}
+          {textField("username", t("fields.username"))}
+          {passwordField("password", t("fields.password"))}
+          {passwordField("accessKeyId", t("fields.accessKeyId"), false)}
+          {passwordField("accessKeySecret", t("fields.accessKeySecret"), false)}
         </>
       )}
 
       {type === "it_api" && (
         <>
-          {textField("platform", "平台")}
-          {textField("username", "用户名")}
-          {passwordField("password", "密码")}
-          {passwordField("apiKey", "API Key", false)}
+          {textField("platform", t("fields.platform"))}
+          {textField("username", t("fields.username"))}
+          {passwordField("password", t("fields.password"))}
+          {passwordField("apiKey", t("fields.apiKey"), false)}
         </>
       )}
 
       <div className="space-y-2">
-        <Label>备注</Label>
+        <Label>{t("fields.notes")}</Label>
         <Textarea
           value={payload.notes || ""}
           onChange={(e) => updatePayload("notes", e.target.value)}
@@ -310,10 +312,14 @@ export function ItemForm({ groups, initial, onSuccess, onCancel }: ItemFormProps
 
       <div className="flex gap-3">
         <Button type="submit" disabled={loading}>
-          {loading ? "保存中..." : initial?.id ? "更新" : "创建"}
+          {loading
+            ? t("common.saving")
+            : initial?.id
+              ? t("common.update")
+              : t("common.create")}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
-          取消
+          {t("common.cancel")}
         </Button>
       </div>
     </form>

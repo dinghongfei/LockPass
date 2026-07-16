@@ -4,10 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { Copy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Group, VaultItem } from "@/lib/types";
-import { ITEM_STATUS_LABELS, ITEM_TYPE_LABELS } from "@/lib/types";
+import type { VaultItem } from "@/lib/types";
 import { getItemListFields } from "@/lib/item-list-preview";
 import { copyText } from "@/lib/clipboard";
+import { useT } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 
 interface ItemListCardProps {
@@ -26,6 +26,7 @@ function ListCopyField({
   sensitive?: boolean;
   copyable?: boolean;
 }) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
 
   if (!value) return null;
@@ -54,14 +55,18 @@ function ListCopyField({
           <button
             type="button"
             className="shrink-0 rounded-sm text-muted-foreground transition-colors hover:text-foreground"
-            aria-label={copied ? "已复制" : `复制${label}`}
+            aria-label={
+              copied ? t("common.copied") : t("common.copyLabel", { label })
+            }
             onClick={handleCopy}
           >
             <Copy className="h-3.5 w-3.5" />
           </button>
         )}
         {copied && (
-          <span className="shrink-0 text-xs text-muted-foreground">已复制</span>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {t("common.copied")}
+          </span>
         )}
       </div>
     </div>
@@ -69,7 +74,8 @@ function ListCopyField({
 }
 
 export function ItemListCard({ item, groupName }: ItemListCardProps) {
-  const fields = getItemListFields(item);
+  const t = useT();
+  const fields = getItemListFields(item, t);
   const isDiscarded = item.status === "discarded";
 
   return (
@@ -80,11 +86,11 @@ export function ItemListCard({ item, groupName }: ItemListCardProps) {
           <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
             {isDiscarded && (
               <span className="rounded bg-destructive/10 px-2 py-0.5 text-destructive">
-                {ITEM_STATUS_LABELS.discarded}
+                {t("itemStatus.discarded")}
               </span>
             )}
             <span className="rounded bg-muted px-2 py-0.5">
-              {ITEM_TYPE_LABELS[item.type]}
+              {t(`itemTypes.${item.type}`)}
             </span>
             <span className="rounded bg-muted px-2 py-0.5">{groupName}</span>
           </div>

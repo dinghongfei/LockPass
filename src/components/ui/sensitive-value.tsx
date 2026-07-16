@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Copy, Eye } from "lucide-react";
 import { copyText } from "@/lib/clipboard";
+import { useT } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 
 interface SensitiveValueProps {
@@ -10,7 +11,7 @@ interface SensitiveValueProps {
   className?: string;
   multiline?: boolean;
   copyable?: boolean;
-  /** 紧凑行内布局，适用于变更记录等并排场景 */
+  /** Compact inline layout for change history and similar side-by-side views */
   inline?: boolean;
 }
 
@@ -21,13 +22,14 @@ export function SensitiveValue({
   copyable = false,
   inline = false,
 }: SensitiveValueProps) {
+  const t = useT();
   const [revealed, setRevealed] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
   const hide = React.useCallback(() => setRevealed(false), []);
   const show = React.useCallback(() => setRevealed(true), []);
 
   if (!value) {
-    return <span className="text-muted-foreground">—</span>;
+    return <span className="text-muted-foreground">{t("common.empty")}</span>;
   }
 
   const display = revealed ? value : "••••••••";
@@ -83,7 +85,7 @@ export function SensitiveValue({
             type="button"
             tabIndex={-1}
             className="rounded-sm text-muted-foreground transition-colors hover:text-foreground"
-            aria-label={copied ? "已复制" : "复制"}
+            aria-label={copied ? t("common.copied") : t("common.copy")}
             onClick={handleCopy}
           >
             <Copy className="h-4 w-4" />
@@ -93,7 +95,7 @@ export function SensitiveValue({
           type="button"
           tabIndex={-1}
           className="select-none rounded-sm text-muted-foreground transition-colors hover:text-foreground"
-          aria-label="按住显示"
+          aria-label={t("sensitive.holdToReveal")}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerRelease}
           onPointerCancel={handlePointerRelease}
@@ -101,7 +103,7 @@ export function SensitiveValue({
           <Eye className="h-4 w-4" />
         </button>
         {copied && (
-          <span className="text-xs text-muted-foreground">已复制</span>
+          <span className="text-xs text-muted-foreground">{t("common.copied")}</span>
         )}
       </div>
     </div>

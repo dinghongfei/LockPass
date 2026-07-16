@@ -1,5 +1,5 @@
+import type { TranslateFn } from "@/lib/i18n/translate";
 import type { ItemChangeEntry, ItemStatus, ItemType, VaultItem } from "@/lib/types";
-import { ITEM_STATUS_LABELS, ITEM_TYPE_LABELS } from "@/lib/types";
 
 export const SENSITIVE_ITEM_FIELDS = new Set([
   "password",
@@ -11,6 +11,33 @@ export const SENSITIVE_ITEM_FIELDS = new Set([
   "apiKey",
 ]);
 
+const FIELD_MESSAGE_KEYS: Record<string, string> = {
+  groupId: "fields.groupId",
+  type: "fields.type",
+  name: "fields.name",
+  status: "fields.status",
+  url: "fields.url",
+  username: "fields.username",
+  password: "fields.password",
+  notes: "fields.notes",
+  cardName: "fields.cardName",
+  cardNumber: "fields.cardNumber",
+  expiry: "fields.expiry",
+  cvv: "fields.cvv",
+  pin: "fields.pin",
+  holderName: "fields.holderName",
+  instanceId: "fields.instanceId",
+  instanceName: "fields.instanceName",
+  privateIp: "fields.privateIp",
+  publicIp: "fields.publicIp",
+  platform: "fields.platform",
+  accountName: "fields.accountName",
+  accessKeyId: "fields.accessKeyId",
+  accessKeySecret: "fields.accessKeySecret",
+  apiKey: "fields.apiKey",
+};
+
+/** @deprecated Prefer getFieldLabel(field, t) for UI */
 export const ITEM_FIELD_LABELS: Record<string, string> = {
   groupId: "所属分组",
   type: "条目类型",
@@ -41,24 +68,35 @@ export function isSensitiveField(field: string): boolean {
   return SENSITIVE_ITEM_FIELDS.has(field);
 }
 
-export function getFieldLabel(field: string): string {
+export function getFieldLabel(field: string, t?: TranslateFn): string {
+  if (t) {
+    const key = FIELD_MESSAGE_KEYS[field];
+    return key ? t(key) : field;
+  }
   return ITEM_FIELD_LABELS[field] ?? field;
 }
 
 export function formatFieldValue(
   field: string,
   value: string | undefined,
-  groupNames?: Record<string, string>
+  groupNames?: Record<string, string>,
+  t?: TranslateFn
 ): string {
-  if (value === undefined || value === "") return "—";
+  if (value === undefined || value === "") {
+    return t ? t("common.empty") : "—";
+  }
   if (field === "groupId" && groupNames) {
     return groupNames[value] ?? value;
   }
   if (field === "type") {
-    return ITEM_TYPE_LABELS[value as ItemType] ?? value;
+    return t
+      ? t(`itemTypes.${value as ItemType}`)
+      : value;
   }
   if (field === "status") {
-    return ITEM_STATUS_LABELS[value as ItemStatus] ?? value;
+    return t
+      ? t(`itemStatus.${value as ItemStatus}`)
+      : value;
   }
   return value;
 }

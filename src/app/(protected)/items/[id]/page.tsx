@@ -6,6 +6,7 @@ import { ItemChangeHistory } from "@/components/item-change-history";
 import { ItemDetail } from "@/components/item-detail";
 import { ItemForm } from "@/components/item-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useT } from "@/lib/i18n/provider";
 import type { Group, ItemChangeRecord, ItemType, VaultItem } from "@/lib/types";
 
 type PageMode = "view" | "edit";
@@ -16,6 +17,7 @@ export default function ItemPage({
   params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
+  const t = useT();
   const [groups, setGroups] = useState<Group[]>([]);
   const [item, setItem] = useState<VaultItem | null>(null);
   const [changes, setChanges] = useState<ItemChangeRecord[]>([]);
@@ -56,7 +58,9 @@ export default function ItemPage({
 
   if (!item) {
     return (
-      <div className="p-6 text-center text-muted-foreground">加载中...</div>
+      <div className="p-6 text-center text-muted-foreground">
+        {t("common.loading")}
+      </div>
     );
   }
 
@@ -68,7 +72,7 @@ export default function ItemPage({
       <Card>
         <CardHeader>
           <CardTitle>
-            {mode === "view" ? "密码条目详情" : "编辑密码条目"}
+            {mode === "view" ? t("item.detailTitle") : t("item.editTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>

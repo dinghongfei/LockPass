@@ -9,9 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useT } from "@/lib/i18n/provider";
+import { isSystemDiscardedGroup } from "@/lib/system-groups";
 import type { Group, GroupItemStats, VaultItem } from "@/lib/types";
 
 export default function DashboardPage() {
+  const t = useT();
   const [groups, setGroups] = useState<Group[]>([]);
   const [items, setItems] = useState<VaultItem[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
@@ -65,15 +68,17 @@ export default function DashboardPage() {
 
   const emptyMessage =
     items.length === 0
-      ? "暂无密码条目"
+      ? t("dashboard.emptyVault")
       : filtered.length === 0
         ? activeOnly
-          ? "暂无有效条目"
-          : "没有匹配的条目"
+          ? t("dashboard.emptyActive")
+          : t("dashboard.emptyFiltered")
         : "";
 
-  const getGroupName = (groupId: string) =>
-    groups.find((g) => g.id === groupId)?.name || "未知分组";
+  const getGroupName = (groupId: string) => {
+    if (isSystemDiscardedGroup(groupId)) return t("groups.discarded");
+    return groups.find((g) => g.id === groupId)?.name || t("common.unknownGroup");
+  };
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-7xl">
@@ -91,7 +96,7 @@ export default function DashboardPage() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 className="pl-9"
-                placeholder="搜索条目..."
+                placeholder={t("dashboard.searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -103,14 +108,14 @@ export default function DashboardPage() {
                 onCheckedChange={(checked) => setActiveOnly(checked === true)}
               />
               <Label htmlFor="active-only" className="cursor-pointer text-sm">
-                仅看生效状态
+                {t("dashboard.activeOnly")}
               </Label>
             </div>
           </div>
           <Button asChild>
             <Link href="/items/new">
               <Plus className="mr-1 h-4 w-4" />
-              新建条目
+              {t("dashboard.newItem")}
             </Link>
           </Button>
         </div>
@@ -120,7 +125,7 @@ export default function DashboardPage() {
             <p className="text-muted-foreground">{emptyMessage}</p>
             {items.length === 0 && (
               <Button asChild className="mt-4">
-                <Link href="/items/new">创建第一个条目</Link>
+                <Link href="/items/new">{t("dashboard.createFirst")}</Link>
               </Button>
             )}
           </div>

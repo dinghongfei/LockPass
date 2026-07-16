@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { KeyRound, LogOut, Shuffle, Upload, type LucideIcon } from "lucide-react";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n/provider";
 
 interface NavHeaderProps {
   username?: string;
@@ -11,25 +13,25 @@ interface NavHeaderProps {
 
 const NAV_ITEMS: {
   href: string;
-  label: string;
+  labelKey: "nav.vault" | "nav.generator" | "nav.importExport";
   icon?: LucideIcon;
   isActive: (pathname: string) => boolean;
 }[] = [
   {
     href: "/",
-    label: "密码库",
+    labelKey: "nav.vault",
     isActive: (pathname) =>
       pathname === "/" || pathname.startsWith("/items"),
   },
   {
     href: "/generator",
-    label: "生成密码",
+    labelKey: "nav.generator",
     icon: Shuffle,
     isActive: (pathname) => pathname.startsWith("/generator"),
   },
   {
     href: "/import-export",
-    label: "导入导出",
+    labelKey: "nav.importExport",
     icon: Upload,
     isActive: (pathname) => pathname.startsWith("/import-export"),
   },
@@ -38,6 +40,7 @@ const NAV_ITEMS: {
 export function NavHeader({ username }: NavHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useT();
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -54,7 +57,7 @@ export function NavHeader({ username }: NavHeaderProps) {
             LockPass
           </Link>
           <nav className="hidden items-center gap-1 sm:flex">
-            {NAV_ITEMS.map(({ href, label, icon: Icon, isActive }) => {
+            {NAV_ITEMS.map(({ href, labelKey, icon: Icon, isActive }) => {
               const active = isActive(pathname);
               return (
                 <Button
@@ -65,7 +68,7 @@ export function NavHeader({ username }: NavHeaderProps) {
                 >
                   <Link href={href} aria-current={active ? "page" : undefined}>
                     {Icon && <Icon className="mr-1 h-4 w-4" />}
-                    {label}
+                    {t(labelKey)}
                   </Link>
                 </Button>
               );
@@ -76,9 +79,10 @@ export function NavHeader({ username }: NavHeaderProps) {
           {username && (
             <span className="text-sm text-muted-foreground">{username}</span>
           )}
+          <LocaleSwitcher compact />
           <Button variant="outline" size="sm" onClick={handleLogout}>
             <LogOut className="mr-1 h-4 w-4" />
-            退出
+            {t("nav.logout")}
           </Button>
         </div>
       </div>

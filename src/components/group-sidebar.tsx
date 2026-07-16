@@ -11,12 +11,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useT } from "@/lib/i18n/provider";
+import type { TranslateFn } from "@/lib/i18n/provider";
 import type { Group, GroupItemStats } from "@/lib/types";
-import {
-  DISCARDED_GROUP_NAME,
-  isSystemDiscardedGroup,
-  isUserGroup,
-} from "@/lib/system-groups";
+import { isSystemDiscardedGroup, isUserGroup } from "@/lib/system-groups";
 import { cn } from "@/lib/utils";
 
 function HoverHint({
@@ -56,17 +54,25 @@ function getGroupStats(
   return groupItemStats[groupId] ?? { active: 0, discarded: 0 };
 }
 
-function getDeleteHint(stats: GroupItemStats): string {
-  if (stats.active > 0) return "分组内存在有效条目，无法删除";
-  if (stats.discarded > 0) return "删除分组（废弃条目将移至已废弃）";
-  return "删除分组";
+function getDeleteHint(stats: GroupItemStats, t: TranslateFn): string {
+  if (stats.active > 0) return t("groups.deleteHintHasActive");
+  if (stats.discarded > 0) return t("groups.deleteHintHasDiscarded");
+  return t("groups.deleteHint");
 }
 
-function getDeleteMessage(groupName: string, stats: GroupItemStats): string {
+function getDeleteMessage(
+  groupName: string,
+  stats: GroupItemStats,
+  t: TranslateFn
+): string {
   if (stats.discarded === 0) {
-    return `确定删除分组「${groupName}」吗？此操作不可撤销。`;
+    return t("groups.deleteConfirm", { name: groupName });
   }
-  return `确定删除分组「${groupName}」吗？分组内的 ${stats.discarded} 条已废弃条目将移动到「${DISCARDED_GROUP_NAME}」分组，此操作不可撤销。`;
+  return t("groups.deleteConfirmWithDiscarded", {
+    name: groupName,
+    count: stats.discarded,
+    discarded: t("groups.discarded"),
+  });
 }
 
 export function GroupSidebar({
@@ -76,6 +82,7 @@ export function GroupSidebar({
   onSelect,
   onRefresh,
 }: GroupSidebarProps) {
+  const t = useT();
   const [newName, setNewName] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -149,7 +156,7 @@ export function GroupSidebar({
     setDeleteLoading(false);
     if (!res.ok) {
       const data = (await res.json().catch(() => null)) as { error?: string } | null;
-      setDeleteError(data?.error || "删除失败");
+      setDeleteError(data?.error || t("groups.deleteFailed"));
       return;
     }
     if (selectedGroupId === deleteTarget.id) onSelect(null);
@@ -160,7 +167,7 @@ export function GroupSidebar({
   return (
     <aside className="w-full shrink-0 border-r border-border bg-card md:w-64">
       <div className="flex items-center justify-between border-b border-border p-4">
-        <h2 className="font-semibold">分组</h2>
+        <h2 className="font-semibold">{t("groups.title")}</h2>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button size="icon" variant="outline">
@@ -169,18 +176,18 @@ export function GroupSidebar({
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>新建分组</DialogTitle>
+              <DialogTitle>{t("groups.newGroup")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <Input
-                placeholder="分组名称"
+                placeholder={t("groups.namePlaceholder")}
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && createGroup()}
               />
               <div className="flex gap-3">
                 <Button onClick={createGroup} disabled={loading}>
-                  创建
+                  {t("common.create")}
                 </Button>
                 <Button
                   type="button"
@@ -188,7 +195,7 @@ export function GroupSidebar({
                   onClick={handleCancelCreate}
                   disabled={loading}
                 >
-                  取消
+                  {t("common.cancel")}
                 </Button>
               </div>
             </div>
@@ -203,7 +210,7 @@ export function GroupSidebar({
             selectedGroupId === null && "bg-muted font-medium"
           )}
         >
-          全部条目
+          {t("groups.allItems")}
         </button>
         {systemDiscardedGroup && (
           <button
@@ -213,13 +220,13 @@ export function GroupSidebar({
               selectedGroupId === systemDiscardedGroup.id && "bg-muted font-medium text-foreground"
             )}
           >
-            {systemDiscardedGroup.name}
+            {t("groups.discarded")}
           </button>
         )}
         {userGroups.map((group) => {
           const stats = getGroupStats(groupItemStats, group.id);
           const canDelete = stats.active === 0;
-          const deleteHint = getDeleteHint(stats);
+          const deleteHint = getDeleteHint(stats, t);
 
           return (
             <div
@@ -294,11 +301,11 @@ export function GroupSidebar({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>删除分组</DialogTitle>
+            <DialogTitle>{t("groups.deleteTitle")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
             {deleteTarget
-              ? getDeleteMessage(deleteTarget.name, deleteTargetStats)
+              ? getDeleteMessage(deleteTarget.name, deleteTargetStats, t)
               : ""}
           </p>
           {deleteError && (
@@ -311,7 +318,7 @@ export function GroupSidebar({
               onClick={handleCancelDelete}
               disabled={deleteLoading}
             >
-              取消
+              {t("common.cancel")}
             </Button>
             <Button
               type="button"
@@ -319,7 +326,7 @@ export function GroupSidebar({
               onClick={confirmDeleteGroup}
               disabled={deleteLoading}
             >
-              删除
+              {t("common.delete")}
             </Button>
           </div>
         </DialogContent>

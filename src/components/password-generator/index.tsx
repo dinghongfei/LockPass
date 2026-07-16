@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { copyText } from "@/lib/clipboard";
+import { useT } from "@/lib/i18n/provider";
 import {
   DEFAULT_PASSWORD_OPTIONS,
   type PasswordGeneratorOptions,
@@ -21,6 +22,7 @@ export function PasswordGenerator({
   compact = false,
   onSelect,
 }: PasswordGeneratorProps) {
+  const t = useT();
   const [options, setOptions] = useState<PasswordGeneratorOptions>(
     DEFAULT_PASSWORD_OPTIONS
   );
@@ -38,14 +40,14 @@ export function PasswordGenerator({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "生成失败");
+        setError(data.error || t("generator.failed"));
         return;
       }
       setPassword(data.password);
     } catch {
-      setError("生成失败");
+      setError(t("generator.failed"));
     }
-  }, [options]);
+  }, [options, t]);
 
   useEffect(() => {
     generate();
@@ -65,6 +67,14 @@ export function PasswordGenerator({
     setOptions((prev) => ({ ...prev, [key]: value }));
   };
 
+  const checkboxOptions = [
+    ["includeUppercase", "generator.includeUppercase"],
+    ["includeLowercase", "generator.includeLowercase"],
+    ["includeNumbers", "generator.includeNumbers"],
+    ["includeSpecial", "generator.includeSpecial"],
+    ["excludeAmbiguous", "generator.excludeAmbiguous"],
+  ] as const;
+
   return (
     <div className={compact ? "space-y-4" : "space-y-6"}>
       <div className="flex items-center gap-2">
@@ -72,19 +82,19 @@ export function PasswordGenerator({
           readOnly
           value={password}
           className="font-mono text-base"
-          placeholder="生成的密码"
+          placeholder={t("generator.placeholder")}
         />
         <Button type="button" variant="outline" onClick={generate}>
           <RefreshCw className="h-4 w-4" />
-          刷新
+          {t("common.refresh")}
         </Button>
         <Button type="button" variant="outline" onClick={handleCopy}>
           <Copy className="h-4 w-4" />
-          {copied ? "已复制" : "复制"}
+          {copied ? t("common.copied") : t("common.copy")}
         </Button>
         {onSelect && password && (
           <Button type="button" onClick={() => onSelect(password)}>
-            使用
+            {t("common.use")}
           </Button>
         )}
       </div>
@@ -93,7 +103,7 @@ export function PasswordGenerator({
 
       <div className={`grid gap-4 ${compact ? "grid-cols-1" : "grid-cols-2"}`}>
         <div className="space-y-2">
-          <Label htmlFor="length">密码长度</Label>
+          <Label htmlFor="length">{t("generator.length")}</Label>
           <Input
             id="length"
             type="number"
@@ -106,7 +116,7 @@ export function PasswordGenerator({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="minNumbers">数字最小长度</Label>
+          <Label htmlFor="minNumbers">{t("generator.minNumbers")}</Label>
           <Input
             id="minNumbers"
             type="number"
@@ -119,7 +129,7 @@ export function PasswordGenerator({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="minSpecial">特殊符号最小长度</Label>
+          <Label htmlFor="minSpecial">{t("generator.minSpecial")}</Label>
           <Input
             id="minSpecial"
             type="number"
@@ -137,15 +147,7 @@ export function PasswordGenerator({
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {(
-          [
-            ["includeUppercase", "大写字母"],
-            ["includeLowercase", "小写字母"],
-            ["includeNumbers", "数字"],
-            ["includeSpecial", "特殊符号"],
-            ["excludeAmbiguous", "排除易混淆字符"],
-          ] as const
-        ).map(([key, label]) => (
+        {checkboxOptions.map(([key, labelKey]) => (
           <label key={key} className="flex items-center gap-2 text-sm">
             <Checkbox
               checked={options[key]}
@@ -153,7 +155,7 @@ export function PasswordGenerator({
                 updateOption(key, checked === true)
               }
             />
-            {label}
+            {t(labelKey)}
           </label>
         ))}
       </div>

@@ -1,9 +1,10 @@
 export interface SshCommand {
-  label: string;
+  /** Network key: private | public — translate in UI */
+  network: "private" | "public";
   command: string;
 }
 
-/** 根据用户名与 IP 生成 SSH 登录指令（仅在有值时返回） */
+/** Build SSH login commands when username + IP are present */
 export function buildSshCommands(
   username?: string,
   privateIp?: string,
@@ -17,10 +18,10 @@ export function buildSshCommands(
   const outer = publicIp?.trim();
 
   if (inner) {
-    commands.push({ label: "内网", command: `ssh ${user}@${inner}` });
+    commands.push({ network: "private", command: `ssh ${user}@${inner}` });
   }
   if (outer) {
-    commands.push({ label: "公网", command: `ssh ${user}@${outer}` });
+    commands.push({ network: "public", command: `ssh ${user}@${outer}` });
   }
   return commands;
 }

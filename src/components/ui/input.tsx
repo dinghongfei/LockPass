@@ -1,5 +1,8 @@
+"use client";
+
 import * as React from "react";
 import { X } from "lucide-react";
+import { useT } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 
 export interface InputProps
@@ -21,6 +24,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
+    const t = useT();
     const [uncontrolledValue, setUncontrolledValue] = React.useState(
       defaultValue?.toString() ?? ""
     );
@@ -80,7 +84,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             tabIndex={-1}
             onClick={handleClear}
             className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm text-muted-foreground transition-colors hover:text-foreground"
-            aria-label="清除"
+            aria-label={t("sensitive.clear")}
           >
             <X className="h-4 w-4" />
           </button>

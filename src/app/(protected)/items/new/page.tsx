@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ItemForm } from "@/components/item-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useT } from "@/lib/i18n/provider";
 import type { Group } from "@/lib/types";
 
 export default function NewItemPage() {
   const router = useRouter();
+  const t = useT();
   const [groups, setGroups] = useState<Group[]>([]);
 
   useEffect(() => {
@@ -20,12 +22,12 @@ export default function NewItemPage() {
     <div className="mx-auto max-w-2xl p-4 md:p-6">
       <Card>
         <CardHeader>
-          <CardTitle>新建密码条目</CardTitle>
+          <CardTitle>{t("item.newTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           {groups.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              请先在主面板创建一个分组
+              {t("item.needGroupFirst")}
             </p>
           ) : (
             <ItemForm

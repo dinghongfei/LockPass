@@ -5,8 +5,10 @@ import { Download, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { useI18n } from "@/lib/i18n/provider";
 
 export default function ImportExportPage() {
+  const { t, locale } = useI18n();
   const [mode, setMode] = useState<"merge" | "replace">("merge");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -15,9 +17,11 @@ export default function ImportExportPage() {
   const handleExport = async () => {
     setError("");
     setMessage("");
-    const res = await fetch("/api/vault");
+    const res = await fetch(
+      `/api/vault?locale=${encodeURIComponent(locale)}`
+    );
     if (!res.ok) {
-      setError("导出失败");
+      setError(t("importExport.exportFailed"));
       return;
     }
     const data = await res.json();
@@ -30,7 +34,7 @@ export default function ImportExportPage() {
     a.download = `lockpass-export-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    setMessage("导出成功");
+    setMessage(t("importExport.exportOk"));
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,14 +53,16 @@ export default function ImportExportPage() {
       });
       const result = await res.json();
       if (!res.ok) {
-        setError(result.error || "导入失败");
+        setError(result.error || t("importExport.importFailed"));
         return;
       }
       setMessage(
-        mode === "replace" ? "全量替换导入成功" : "合并导入成功"
+        mode === "replace"
+          ? t("importExport.importReplaceOk")
+          : t("importExport.importMergeOk")
       );
     } catch {
-      setError("文件格式无效");
+      setError(t("importExport.invalidFile"));
     } finally {
       setLoading(false);
       e.target.value = "";
@@ -67,29 +73,29 @@ export default function ImportExportPage() {
     <div className="mx-auto max-w-2xl space-y-6 p-4 md:p-6">
       <Card>
         <CardHeader>
-          <CardTitle>导出密码库</CardTitle>
+          <CardTitle>{t("importExport.exportTitle")}</CardTitle>
           <p className="text-sm text-muted-foreground">
-            导出所有分组和密码条目为 JSON 文件（含明文敏感数据，请妥善保管）
+            {t("importExport.exportDesc")}
           </p>
         </CardHeader>
         <CardContent>
           <Button onClick={handleExport}>
             <Download className="mr-1 h-4 w-4" />
-            导出 JSON
+            {t("importExport.exportJson")}
           </Button>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>导入密码库</CardTitle>
+          <CardTitle>{t("importExport.importTitle")}</CardTitle>
           <p className="text-sm text-muted-foreground">
-            从 JSON 文件导入密码数据
+            {t("importExport.importDesc")}
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>导入模式</Label>
+            <Label>{t("importExport.importMode")}</Label>
             <select
               className="flex h-9 w-full rounded-md border border-border bg-card px-3 text-sm"
               value={mode}
@@ -97,8 +103,8 @@ export default function ImportExportPage() {
                 setMode(e.target.value as "merge" | "replace")
               }
             >
-              <option value="merge">合并（保留现有数据）</option>
-              <option value="replace">全量替换（清除现有数据）</option>
+              <option value="merge">{t("importExport.merge")}</option>
+              <option value="replace">{t("importExport.replace")}</option>
             </select>
           </div>
           <div>
@@ -113,7 +119,7 @@ export default function ImportExportPage() {
             <Button asChild disabled={loading}>
               <label htmlFor="import-file" className="cursor-pointer">
                 <Upload className="mr-1 h-4 w-4" />
-                {loading ? "导入中..." : "选择 JSON 文件"}
+                {loading ? t("importExport.importing") : t("importExport.chooseFile")}
               </label>
             </Button>
           </div>

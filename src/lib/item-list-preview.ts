@@ -1,10 +1,11 @@
 import { buildSshCommands } from "@/lib/it-commands";
+import type { TranslateFn } from "@/lib/i18n/translate";
 import type { ItemType, VaultItem } from "@/lib/types";
 
 export interface ItemListField {
   label: string;
   value?: string;
-  /** 列表中掩码显示，仍可复制真实值 */
+  /** Masked in the list; copy still uses the real value */
   sensitive?: boolean;
   copyable?: boolean;
 }
@@ -30,52 +31,49 @@ function copyField(
 }
 
 /**
- * 列表卡片快捷字段（按使用场景选取）：
- *
- * - 网站：登录时最常复制用户名 + 密码；URL 用于打开站点
- * - 卡券：支付时复制卡号 + 有效期；卡券名称用于识别
- * - IT-服务器：运维首选复制 SSH 指令；密码作备用；实例信息辅助定位
- * - IT-RAM用户：CLI/SDK 使用 AK + SK；平台与账号名辅助识别
- * - IT-API：调用接口复制 API Key；平台与用户名辅助识别
+ * List-card quick fields (by usage scenario).
  */
-export function getItemListFields(item: VaultItem): ItemListField[] {
+export function getItemListFields(
+  item: VaultItem,
+  t: TranslateFn
+): ItemListField[] {
   const p = payloadOf(item);
   const fields: ItemListField[] = [];
 
   switch (item.type as ItemType) {
     case "website": {
       for (const f of [
-        copyField("网站", p.url),
-        copyField("用户名", p.username),
-        copyField("密码", p.password, true),
+        copyField(t("fields.website"), p.url),
+        copyField(t("fields.username"), p.username),
+        copyField(t("fields.password"), p.password, true),
       ]) {
         if (f) fields.push(f);
       }
       break;
     }
     case "card": {
-      const ctx = contextField("卡券", p.cardName);
+      const ctx = contextField(t("fields.card"), p.cardName);
       if (ctx) fields.push(ctx);
       for (const f of [
-        copyField("卡号", p.cardNumber, true),
-        copyField("有效期", p.expiry),
+        copyField(t("fields.cardNumber"), p.cardNumber, true),
+        copyField(t("fields.expiry"), p.expiry),
       ]) {
         if (f) fields.push(f);
       }
       break;
     }
     case "it_server": {
-      const ctx = contextField("实例名称", p.instanceName?.trim());
+      const ctx = contextField(t("fields.instanceName"), p.instanceName?.trim());
       if (ctx) fields.push(ctx);
 
       for (const cmd of buildSshCommands(p.username, p.privateIp, p.publicIp)) {
         fields.push({
-          label: `SSH（${cmd.label}）`,
+          label: t("fields.ssh", { label: t(`ssh.${cmd.network}`) }),
           value: cmd.command,
           copyable: true,
         });
       }
-      const password = copyField("密码", p.password, true);
+      const password = copyField(t("fields.password"), p.password, true);
       if (password) fields.push(password);
       break;
     }
@@ -83,22 +81,22 @@ export function getItemListFields(item: VaultItem): ItemListField[] {
       const ctxText = [p.platform?.trim(), p.accountName?.trim()]
         .filter(Boolean)
         .join(" · ");
-      const ctx = contextField("账号", ctxText || undefined);
+      const ctx = contextField(t("fields.account"), ctxText || undefined);
       if (ctx) fields.push(ctx);
       for (const f of [
-        copyField("AK", p.accessKeyId, true),
-        copyField("SK", p.accessKeySecret, true),
+        copyField(t("fields.ak"), p.accessKeyId, true),
+        copyField(t("fields.sk"), p.accessKeySecret, true),
       ]) {
         if (f) fields.push(f);
       }
       break;
     }
     case "it_api": {
-      const ctx = contextField("平台", p.platform);
+      const ctx = contextField(t("fields.platform"), p.platform);
       if (ctx) fields.push(ctx);
       for (const f of [
-        copyField("用户名", p.username),
-        copyField("API Key", p.apiKey, true),
+        copyField(t("fields.username"), p.username),
+        copyField(t("fields.apiKey"), p.apiKey, true),
       ]) {
         if (f) fields.push(f);
       }
