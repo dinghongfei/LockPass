@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { KeyRound, LogOut, Shuffle, Upload, type LucideIcon } from "lucide-react";
+import { LogOut, Shuffle, Upload, type LucideIcon } from "lucide-react";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { LockPassMark } from "@/components/lockpass-mark";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/provider";
 
@@ -53,7 +54,7 @@ export function NavHeader({ username }: NavHeaderProps) {
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 font-semibold">
-            <KeyRound className="h-5 w-5 text-primary" />
+            <LockPassMark className="h-5 w-5" />
             LockPass
           </Link>
           <nav className="hidden items-center gap-1 sm:flex">
