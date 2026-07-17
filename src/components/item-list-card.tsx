@@ -20,11 +20,13 @@ function ListCopyField({
   value,
   sensitive = false,
   copyable = true,
+  maxDisplayLength,
 }: {
   label: string;
   value?: string;
   sensitive?: boolean;
   copyable?: boolean;
+  maxDisplayLength?: number;
 }) {
   const t = useT();
   const [copied, setCopied] = useState(false);
@@ -39,14 +41,20 @@ function ListCopyField({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const display = sensitive ? "••••••••" : value;
+  const truncated =
+    !sensitive &&
+    maxDisplayLength !== undefined &&
+    value.length > maxDisplayLength
+      ? `${value.slice(0, maxDisplayLength)}…`
+      : value;
+  const display = sensitive ? "••••••••" : truncated;
 
   return (
     <div className="flex min-w-0 items-center gap-2 text-sm">
       <span className="w-16 shrink-0 text-muted-foreground sm:w-20">{label}</span>
       <div className="flex min-w-0 flex-1 items-center gap-1">
         <span
-          className={cn("min-w-0 truncate", sensitive && "font-mono")}
+          className={cn("min-w-0 break-all", sensitive && "font-mono")}
           title={sensitive ? undefined : value}
         >
           {display}
@@ -105,6 +113,7 @@ export function ItemListCard({ item, groupName }: ItemListCardProps) {
                 value={field.value}
                 sensitive={field.sensitive}
                 copyable={field.copyable}
+                maxDisplayLength={field.maxDisplayLength}
               />
             ))}
           </div>

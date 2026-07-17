@@ -8,6 +8,8 @@ export interface ItemListField {
   /** Masked in the list; copy still uses the real value */
   sensitive?: boolean;
   copyable?: boolean;
+  /** Max visible characters in the list card (ellipsis when longer); copy keeps full value */
+  maxDisplayLength?: number;
 }
 
 function payloadOf(item: VaultItem): Record<string, string | undefined> {
@@ -23,11 +25,12 @@ function contextField(label: string, value?: string): ItemListField | null {
 function copyField(
   label: string,
   value?: string,
-  sensitive = false
+  sensitive = false,
+  maxDisplayLength?: number
 ): ItemListField | null {
   const trimmed = value?.trim();
   if (!trimmed) return null;
-  return { label, value: trimmed, sensitive, copyable: true };
+  return { label, value: trimmed, sensitive, copyable: true, maxDisplayLength };
 }
 
 /**
@@ -43,7 +46,7 @@ export function getItemListFields(
   switch (item.type as ItemType) {
     case "website": {
       for (const f of [
-        copyField(t("fields.website"), p.url),
+        copyField(t("fields.website"), p.url, false, 50),
         copyField(t("fields.username"), p.username),
         copyField(t("fields.password"), p.password, true),
       ]) {
