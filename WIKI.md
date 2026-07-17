@@ -39,7 +39,7 @@
 
 ### High-level architecture
 
-LockPass follows a classic B/S stack: browser pages → Next.js middleware & API → core libraries → pluggable storage backend. Sensitive payload is encrypted with AES-256-GCM before persistence.
+LockPass follows a classic B/S stack: browser pages → Next.js proxy & API → core libraries → pluggable storage backend. Sensitive payload is encrypted with AES-256-GCM before persistence.
 
 ```mermaid
 flowchart TB
@@ -49,7 +49,7 @@ flowchart TB
     end
 
     subgraph nextjs [Next.js server]
-        MW["middleware route guard"]
+        MW["proxy route guard"]
         API["API Routes auth/groups/items/vault ..."]
         Lib["lib auth / crypto / storage / password-gen"]
     end
@@ -137,7 +137,7 @@ lock-pass/
 │   │   └── api/                   # REST API
 │   ├── components/                # React components
 │   ├── lib/                       # Core business logic
-│   └── middleware.ts              # Route guard
+│   └── proxy.ts              # Route guard
 ├── .env.example
 ├── README.md
 ├── README.zh-CN.md
@@ -159,7 +159,7 @@ lock-pass/
 | Session config | `src/lib/auth/session.ts` |
 | User loading | `src/lib/auth/users.ts` |
 | Password generator algorithm | `src/lib/password-gen/generator.ts` |
-| Route guard | `src/middleware.ts` |
+| Route guard | `src/proxy.ts` |
 | Next.js config | `next.config.ts` |
 
 ---
@@ -185,7 +185,7 @@ flowchart TB
 
     subgraph server [Next.js server]
         direction TB
-        Middleware["middleware.ts route guard"]
+        Proxy["proxy.ts route guard"]
 
         subgraph apiLayer [API Routes]
             AuthAPI["/api/auth login/session"]
@@ -253,7 +253,7 @@ flowchart TB
 | Layer | Responsibility | Key paths |
 |------|------|----------|
 | Client | Page rendering and user interaction | `src/app/`, `src/components/` |
-| Route guard | Block unauthenticated access; whitelist `/login` | `src/middleware.ts` |
+| Route guard | Block unauthenticated access; whitelist `/login` | `src/proxy.ts` |
 | API | REST endpoints, Zod validation, session auth | `src/app/api/` |
 | Core library | Auth, encryption, storage abstraction, password algorithm | `src/lib/` |
 | Persistence | User config, environment, three storage backends | `config/`, `data/`, PostgreSQL |
@@ -413,7 +413,7 @@ interface ExportData {
 
 ## 6. API reference
 
-All APIs except `/api/auth/login` require authentication (middleware).
+All APIs except `/api/auth/login` require authentication (proxy).
 
 ### 6.1 Authentication
 
@@ -709,7 +709,7 @@ npm run hash-password -- your-password
 
 ### 10.3 Route protection
 
-`src/middleware.ts` whitelist:
+`src/proxy.ts` whitelist:
 
 - `/login`
 - `/api/auth/login`

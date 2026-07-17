@@ -49,7 +49,7 @@ flowchart TB
     end
 
     subgraph nextjs [Next.js 服务端]
-        MW["middleware 路由守卫"]
+        MW["proxy 路由守卫"]
         API["API Routes auth/groups/items/vault ..."]
         Lib["lib 认证 / 加密 / 存储 / 密码生成"]
     end
@@ -137,7 +137,7 @@ lock-pass/
 │   │   └── api/                   # REST API
 │   ├── components/                # React 组件
 │   ├── lib/                       # 核心业务逻辑
-│   └── middleware.ts              # 路由守卫
+│   └── proxy.ts              # 路由守卫
 ├── .env.example
 ├── README.md                      # 英文 README（根目录默认）
 ├── README.zh-CN.md                # 中文 README
@@ -159,7 +159,7 @@ lock-pass/
 | 会话配置 | `src/lib/auth/session.ts` |
 | 用户加载 | `src/lib/auth/users.ts` |
 | 密码生成算法 | `src/lib/password-gen/generator.ts` |
-| 路由守卫 | `src/middleware.ts` |
+| 路由守卫 | `src/proxy.ts` |
 | Next 配置 | `next.config.ts` |
 
 ---
@@ -185,7 +185,7 @@ flowchart TB
 
     subgraph server [Next.js 服务端]
         direction TB
-        Middleware["middleware.ts 路由守卫"]
+        Proxy["proxy.ts 路由守卫"]
 
         subgraph apiLayer [API Routes]
             AuthAPI["/api/auth 登录会话"]
@@ -253,7 +253,7 @@ flowchart TB
 | 层级 | 职责 | 关键路径 |
 |------|------|----------|
 | 客户端 | 页面渲染与用户交互 | `src/app/`、`src/components/` |
-| 路由守卫 | 未登录拦截，白名单放行 `/login` | `src/middleware.ts` |
+| 路由守卫 | 未登录拦截，白名单放行 `/login` | `src/proxy.ts` |
 | API | REST 接口，Zod 校验，会话鉴权 | `src/app/api/` |
 | 核心库 | 认证、加密、存储抽象、密码算法 | `src/lib/` |
 | 持久化 | 用户配置、环境变量、三种存储后端 | `config/`、`data/`、PostgreSQL |
@@ -413,7 +413,7 @@ interface ExportData {
 
 ## 6. API 参考
 
-所有 API 除 `/api/auth/login` 外均需登录（middleware 拦截）。
+所有 API 除 `/api/auth/login` 外均需登录（proxy 拦截）。
 
 ### 6.1 认证
 
@@ -703,7 +703,7 @@ npm run hash-password -- your-password
 
 ### 10.3 路由保护
 
-`src/middleware.ts` 白名单：
+`src/proxy.ts` 白名单：
 
 - `/login`
 - `/api/auth/login`
