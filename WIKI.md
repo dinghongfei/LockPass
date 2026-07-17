@@ -741,22 +741,19 @@ See `.env.example`.
 
 ```bash
 # 1. Configure .env.local or environment variables
-# 2. Build
-npm run build
 
-# 3. Start (choose storage backend)
-npm run start        # SQLite
-npm run start:text   # Text file
-npm run start:db     # PostgreSQL
-
-# Or use the service helper (background, logs → app.log)
+# 2. Background helper (recommended; start / restart run npm run build)
 ./scripts/service.sh start
 ./scripts/service.sh status
 ./scripts/service.sh stop
 ./scripts/service.sh restart
-```
 
-**After code changes**, run `npm run build` before `restart`, or the previous build keeps serving.
+# Or foreground start (build manually first)
+npm run build
+npm run start        # SQLite
+npm run start:text   # Text file
+npm run start:db     # PostgreSQL
+```
 
 `service.sh` options:
 

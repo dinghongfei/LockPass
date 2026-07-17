@@ -735,22 +735,21 @@ npm run hash-password -- your-password
 
 ```bash
 # 1. 配置 .env.local 或环境变量；生产用户建议用 config/users.local.json
-# 2. 构建
-npm run build
 
-# 3. 后台启停（推荐）
+# 2. 后台启停（推荐；start / restart 会自动 npm run build）
 ./scripts/service.sh start
 ./scripts/service.sh status
 ./scripts/service.sh stop
 ./scripts/service.sh restart
 
-# 或前台启动
+# 或前台启动（需先手动构建）
+npm run build
 npm run start        # SQLite
 npm run start:text   # 文本
 npm run start:db     # PostgreSQL
 ```
 
-修改源码后需先 `npm run build` 再 `restart`，否则仍运行旧构建。详见 [README.zh-CN.md](README.zh-CN.md)。
+详见 [README.zh-CN.md](README.zh-CN.md)。
 
 ### 12.2 数据备份
 

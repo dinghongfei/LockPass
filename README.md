@@ -20,7 +20,9 @@ Full project documentation: [WIKI.md](WIKI.md) ([中文 Wiki](WIKI.zh-CN.md)).
 - Pluggable storage: text file, SQLite (default), PostgreSQL
 - Preconfigured users (no self-registration)
 
-## Quick start
+## Quick start (local development)
+
+Get a local instance running in a few minutes with default SQLite and the built-in account.
 
 ### 1. Install dependencies
 
@@ -34,65 +36,72 @@ npm install
 cp .env.example .env.local
 ```
 
-Edit `.env.local` and set at least:
+For local development, the sample defaults are enough. For real deployments, replace `ENCRYPTION_KEY` and `SESSION_SECRET` (see [Production deployment](#production-deployment)); never commit secrets to Git.
+
+### 3. Start the dev server
+
+```bash
+npm run dev
+```
+
+Open http://localhost:3000 and sign in with the default account:
+
+| Username | Password |
+|----------|----------|
+| `admin` | `admin123` |
+
+For password changes and background processes, see [Production deployment](#production-deployment). For other storage backends, see [Storage backends](#storage-backends).
+
+## Production deployment
+
+For single-host / intranet self-hosting. On the server, follow the steps below to install, set secrets, change the password, and run in the background.
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure production secrets (required)
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` and replace the sample secrets with random values:
 
 | Variable | Purpose |
 |------|------|
-| `ENCRYPTION_KEY` | Encrypts vault payloads (passwords, card numbers, etc.). Existing data cannot be decrypted if this key is lost |
+| `ENCRYPTION_KEY` | Encrypts vault secrets; existing data cannot be decrypted if this key is lost |
 | `SESSION_SECRET` | Encrypts the login session cookie |
 
-**Generate random secrets** (run once for each variable):
+Generate once for each variable:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
-
-This uses Node’s built-in `crypto` to produce 32 random bytes as a 64-character hex string, for example:
-
-```
-a3f8c2e1b4d567890abcdef0123456789abcdef0123456789abcdef01234567
-```
-
-Paste into `.env.local`:
 
 ```env
 ENCRYPTION_KEY=<first-64-char-hex>
 SESSION_SECRET=<second-64-char-hex>
 ```
 
-> Keep secrets in local `.env.local` only — do not commit them. Changing `ENCRYPTION_KEY` makes old data undecryptable.
+> Keep secrets in `.env.local` only — do not commit them. Changing `ENCRYPTION_KEY` makes old data undecryptable.
 
-### 3. Configure users
+### 3. Configure production users (required)
 
-LockPass uses preconfigured accounts (**no registration**). Files store bcrypt hashes, not plaintext passwords.
-
-Load order:
+LockPass has **no registration**. Accounts come from a users file (bcrypt hashes, not plaintext). Load order:
 
 1. Path from `USERS_FILE` (if set)
-2. `config/users.local.json` (if present; **gitignored** — use this on production hosts)
+2. `config/users.local.json` (if present; **gitignored** — recommended for production)
 3. `config/users.json` (repo default: `admin` / `admin123`)
-
-For local trials, the default account is enough. **On production**, copy and change the password without editing the tracked file:
 
 ```bash
 cp config/users.json config/users.local.json
 npm run hash-password -- your-password
-# Write the hash into config/users.local.json passwordHash, then restart
 ```
 
-**Generate a password hash:**
-
-```bash
-npm run hash-password -- your-password
-```
-
-Example:
-
-```bash
-npm run hash-password -- MySecurePass123
-```
-
-The terminal prints a `$2b$10$...` hash. Put it in the corresponding users file:
+Put the printed `$2b$10$...` hash into `passwordHash` in `config/users.local.json`:
 
 ```json
 [
@@ -104,67 +113,37 @@ The terminal prints a `$2b$10$...` hash. Put it in the corresponding users file:
 ]
 ```
 
-**Restart the app**, then sign in with `username` and the plaintext password you hashed.
+Restart the app, then sign in with `username` and the plaintext password you hashed.
 
-### 4. Start
+### 4. Foreground start (optional)
 
-```bash
-# SQLite (default)
-npm run dev
-
-# Text file storage
-npm run dev:text
-
-# PostgreSQL (requires DATABASE_URL)
-npm run dev:db
-```
-
-Open http://localhost:3000
-
-## Storage backends
-
-Selected via `STORAGE_TYPE`:
-
-| Value | Description | Data location |
-|---|---|---|
-| `sqlite` | SQLite database (default) | `./data/vault.db` |
-| `text` | JSON text file | `./data/vault.json` |
-| `database` | PostgreSQL | Database from `DATABASE_URL` |
-
-### Production build & start
+Build manually first:
 
 ```bash
 npm run build
 npm run start        # SQLite
 npm run start:text   # Text file
-npm run start:db     # PostgreSQL
+npm run start:db     # PostgreSQL (requires DATABASE_URL)
 ```
 
-### Background server deployment
+### 5. Background start (recommended)
 
-Suitable for single-host / intranet self-hosting. After install, env, and users setup:
+`start` / `restart` run `npm run build` automatically — no separate build step:
 
 ```bash
-npm run build
-
-./scripts/service.sh start     # background start; logs → app.log
+./scripts/service.sh start     # build and start in background; logs → app.log
 ./scripts/service.sh status    # status / PIDs
-./scripts/service.sh stop      # stop all related processes (npm / sh / next-server)
-./scripts/service.sh restart   # restart
+./scripts/service.sh stop      # stop related processes (including next-server)
+./scripts/service.sh restart   # stop, then rebuild and start
 ```
 
 Common ops:
 
 ```bash
-# Follow logs
-tail -f app.log
-
-# Custom port
-PORT=8080 ./scripts/service.sh start
-
-# Text / PostgreSQL start scripts
-NPM_SCRIPT=start:text ./scripts/service.sh start
-NPM_SCRIPT=start:db ./scripts/service.sh start
+tail -f app.log                          # follow logs
+PORT=8080 ./scripts/service.sh start     # custom port
+NPM_SCRIPT=start:text ./scripts/service.sh start   # text storage
+NPM_SCRIPT=start:db ./scripts/service.sh start     # PostgreSQL
 ```
 
 Notes:
@@ -172,7 +151,19 @@ Notes:
 - `stop` matches processes by working directory so orphaned `next-server` processes are cleaned up
 - The process survives SSH disconnect, but **does not** come back after a host reboot; use systemd / pm2 for auto-start or crash recovery
 - For public access, put a reverse proxy (Nginx / Caddy) in front with HTTPS and set `SECURE_COOKIES=true`
-- After code changes, run `npm run build` before `restart`, or the old build keeps serving
+- Storage backend reference: [Storage backends](#storage-backends)
+
+## Storage backends
+
+Choose via `STORAGE_TYPE` (or the matching npm script):
+
+| Value | Description | Data location | Local development | Production start |
+|---|---|---|---|---|
+| `sqlite` | SQLite (default) | `./data/vault.db` | `npm run dev` | `npm run start` |
+| `text` | JSON text file | `./data/vault.json` | `npm run dev:text` | `npm run start:text` |
+| `database` | PostgreSQL | `DATABASE_URL` | `npm run dev:db` | `npm run start:db` |
+
+When using PostgreSQL, set `DATABASE_URL` in `.env.local`.
 
 ## Environment variables
 

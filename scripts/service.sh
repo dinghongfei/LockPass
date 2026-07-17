@@ -14,9 +14,9 @@ usage() {
   cat <<EOF
 用法: $(basename "$0") <start|stop|restart|status>
 
-  start    后台启动（nohup，日志写入 app.log）
+  start    先 npm run build，再后台启动（nohup，日志写入 app.log）
   stop     停止本项目相关的全部进程（npm / sh / next-server）
-  restart  先 stop 再 start
+  restart  先 stop，再 build 并 start
   status   查看运行状态与 PID
 
 环境变量:
@@ -198,6 +198,11 @@ cmd_stop() {
   echo "已停止"
 }
 
+cmd_build() {
+  echo "正在构建: npm run build"
+  npm run build
+}
+
 cmd_start() {
   local pid
 
@@ -207,10 +212,7 @@ cmd_start() {
     return 1
   fi
 
-  if [[ ! -d "$ROOT/.next" ]]; then
-    echo "未找到 .next，请先执行: npm run build"
-    return 1
-  fi
+  cmd_build
 
   : >"$LOG_FILE"
   # setsid：独立会话/进程组，便于 stop 时整组清理

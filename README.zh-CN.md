@@ -20,7 +20,9 @@
 - 可插拔存储后端：文本文件、SQLite（默认）、PostgreSQL
 - 预置用户登录（不支持注册）
 
-## 快速开始
+## 快速开始（本地开发）
+
+用默认 SQLite 与预置账号，几分钟内在本机跑起来。
 
 ### 1. 安装依赖
 
@@ -34,65 +36,72 @@ npm install
 cp .env.example .env.local
 ```
 
-编辑 `.env.local`，至少配置以下两项：
+本地开发可直接使用示例中的默认值。正式环境请自行更换 `ENCRYPTION_KEY`、`SESSION_SECRET`（见 [生产环境部署](#生产环境部署)）；不要把密钥提交到 Git。
+
+### 3. 启动开发服务
+
+```bash
+npm run dev
+```
+
+打开 http://localhost:3000 ，使用默认账号登录：
+
+| 用户名 | 密码 |
+|--------|------|
+| `admin` | `admin123` |
+
+生产改密与后台进程见 [生产环境部署](#生产环境部署)。换存储后端见 [存储后端](#存储后端)。
+
+## 生产环境部署
+
+适合单机自托管 / 内网。在部署机上按下列步骤完成安装、密钥、改密并后台运行。
+
+### 1. 安装依赖
+
+```bash
+npm install
+```
+
+### 2. 配置生产密钥（必做）
+
+```bash
+cp .env.example .env.local
+```
+
+编辑 `.env.local`，用随机值替换示例中的密钥：
 
 | 变量 | 作用 |
 |------|------|
-| `ENCRYPTION_KEY` | 加密密码库条目（网站密码、卡号等）的密钥，丢失后已有数据无法解密 |
-| `SESSION_SECRET` | 加密登录会话 Cookie，用于保持登录状态 |
+| `ENCRYPTION_KEY` | 加密密码库敏感字段；丢失后已有数据无法解密 |
+| `SESSION_SECRET` | 加密登录会话 Cookie |
 
-**生成随机密钥**（建议各运行一次，分别填入上面两个变量）：
+各生成一次并填入：
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-命令说明：用 Node 内置 `crypto` 生成 32 字节随机数，再转成 64 位十六进制字符串。终端会输出类似：
-
-```
-a3f8c2e1b4d567890abcdef0123456789abcdef0123456789abcdef01234567
-```
-
-将输出粘贴到 `.env.local`：
-
 ```env
-ENCRYPTION_KEY=粘贴第一次生成的64位hex
-SESSION_SECRET=粘贴第二次生成的64位hex
+ENCRYPTION_KEY=<第一次生成的64位hex>
+SESSION_SECRET=<第二次生成的64位hex>
 ```
 
-> 密钥只保存在本机 `.env.local`，不要提交到 Git。更换 `ENCRYPTION_KEY` 后，旧数据将无法解密。
+> 密钥只放在 `.env.local`，不要提交到 Git。更换 `ENCRYPTION_KEY` 会使旧数据无法解密。
 
-### 3. 配置用户
+### 3. 配置生产用户（必做）
 
-LockPass 使用预置登录账号，**不支持注册**。文件中存的是 bcrypt 哈希，不是明文密码。
+LockPass **不支持注册**，账号来自用户配置文件（存 bcrypt 哈希，非明文）。加载顺序：
 
-加载优先级：
-
-1. 环境变量 `USERS_FILE` 指定的路径
-2. `config/users.local.json`（若存在；**已被 gitignore**，适合生产机改密）
-3. `config/users.json`（仓库默认，`admin` / `admin123`）
-
-本地试用可直接用默认账号。**生产环境**请复制后改密，避免改到会被提交的 `users.json`：
+1. `USERS_FILE` 指定的路径
+2. `config/users.local.json`（若存在；**已被 gitignore**，推荐生产使用）
+3. `config/users.json`（仓库默认：`admin` / `admin123`）
 
 ```bash
 cp config/users.json config/users.local.json
 npm run hash-password -- your-password
-# 将输出的 hash 写入 config/users.local.json 的 passwordHash，然后重启
 ```
 
-**生成登录密码 hash**（将 `your-password` 换成你要设置的登录密码）：
-
-```bash
-npm run hash-password -- your-password
-```
-
-示例：
-
-```bash
-npm run hash-password -- MySecurePass123
-```
-
-终端会输出一行以 `$2b$10$` 开头的 hash，写入对应用户文件的 `passwordHash` 字段：
+将终端输出的 `$2b$10$...` 写入 `config/users.local.json` 的 `passwordHash`：
 
 ```json
 [
@@ -104,75 +113,57 @@ npm run hash-password -- MySecurePass123
 ]
 ```
 
-保存文件后**重启应用**，使用 `username` 与刚才设置的明文密码登录。
+保存后重启应用，用 `username` 与刚才设置的明文密码登录。
 
-### 4. 启动
+### 4. 前台启动（可选）
 
-```bash
-# SQLite 存储（默认）
-npm run dev
-
-# 文本文件存储
-npm run dev:text
-
-# PostgreSQL 存储（需配置 DATABASE_URL）
-npm run dev:db
-```
-
-访问 http://localhost:3000
-
-## 存储后端
-
-通过 `STORAGE_TYPE` 环境变量选择：
-
-| 值 | 说明 | 数据位置 |
-|---|---|---|
-| `sqlite` | SQLite 数据库（默认） | `./data/vault.db` |
-| `text` | JSON 文本文件 | `./data/vault.json` |
-| `database` | PostgreSQL | `DATABASE_URL` 指定的数据库 |
-
-### 生产构建与启动
+需先手动构建：
 
 ```bash
 npm run build
 npm run start        # SQLite
 npm run start:text   # 文本文件
-npm run start:db     # PostgreSQL
+npm run start:db     # PostgreSQL（需 DATABASE_URL）
 ```
 
-### 服务器后台部署
+### 5. 后台启动（推荐）
 
-适合单机自托管 / 内网部署。先完成上文的依赖安装、环境变量与用户配置，再构建并用脚本管理进程：
+`start` / `restart` 会自动执行 `npm run build`，无需再手动构建：
 
 ```bash
-npm run build
-
-./scripts/service.sh start     # 后台启动，日志写入 app.log
+./scripts/service.sh start     # 构建并后台启动，日志写入 app.log
 ./scripts/service.sh status    # 查看状态 / PID
-./scripts/service.sh stop      # 停止全部关联进程（npm / sh / next-server）
-./scripts/service.sh restart   # 重启
+./scripts/service.sh stop      # 停止本项目相关进程（含 next-server）
+./scripts/service.sh restart   # 停止后重新构建并启动
 ```
 
 常用操作：
 
 ```bash
-# 查看日志
-tail -f app.log
-
-# 指定端口启动
-PORT=8080 ./scripts/service.sh start
-
-# 使用文本存储 / PostgreSQL 启动
-NPM_SCRIPT=start:text ./scripts/service.sh start
-NPM_SCRIPT=start:db ./scripts/service.sh start
+tail -f app.log                          # 查看日志
+PORT=8080 ./scripts/service.sh start     # 指定端口
+NPM_SCRIPT=start:text ./scripts/service.sh start   # 文本存储
+NPM_SCRIPT=start:db ./scripts/service.sh start     # PostgreSQL
 ```
 
-说明：
+注意事项：
 
-- `stop` 会按工作目录匹配并清理本项目相关的全部进程，避免只杀父进程后 `next-server` 残留
-- 进程在 SSH 断开后继续运行，但**服务器重启后不会自动拉起**；需要开机自启或崩溃自动恢复时，建议改用 systemd / pm2
-- 公网访问时请在前面加反向代理（Nginx / Caddy 等）并启用 HTTPS，同时设置 `SECURE_COOKIES=true`
-- 修改源码后需先 `npm run build` 再 `restart`，否则仍运行旧构建
+- `stop` 按工作目录匹配进程，避免只杀父进程后 `next-server` 残留
+- SSH 断开后进程仍运行，但**主机重启不会自动拉起**；需要开机自启或崩溃恢复时用 systemd / pm2
+- 公网访问请加反向代理（Nginx / Caddy）并启用 HTTPS，同时设置 `SECURE_COOKIES=true`
+- 存储后端对照见 [存储后端](#存储后端)
+
+## 存储后端
+
+通过 `STORAGE_TYPE`（或对应 npm script）选择：
+
+| 值 | 说明 | 数据位置 | 本地开发 | 生产启动 |
+|---|---|---|---|---|
+| `sqlite` | SQLite（默认） | `./data/vault.db` | `npm run dev` | `npm run start` |
+| `text` | JSON 文本文件 | `./data/vault.json` | `npm run dev:text` | `npm run start:text` |
+| `database` | PostgreSQL | `DATABASE_URL` | `npm run dev:db` | `npm run start:db` |
+
+使用 PostgreSQL 时，在 `.env.local` 中配置 `DATABASE_URL`。
 
 ## 环境变量
 
