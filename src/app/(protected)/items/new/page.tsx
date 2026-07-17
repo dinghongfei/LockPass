@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ItemForm } from "@/components/item-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useT } from "@/lib/i18n/provider";
+import { isSystemDiscardedGroup, isUserGroup } from "@/lib/system-groups";
 import type { Group } from "@/lib/types";
 
 export default function NewItemPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useT();
   const [groups, setGroups] = useState<Group[]>([]);
 
@@ -17,6 +19,14 @@ export default function NewItemPage() {
       .then((r) => r.json())
       .then(setGroups);
   }, []);
+
+  const requestedGroupId = searchParams.get("groupId");
+  const defaultGroupId =
+    requestedGroupId &&
+    isUserGroup({ id: requestedGroupId }) &&
+    !isSystemDiscardedGroup(requestedGroupId)
+      ? requestedGroupId
+      : undefined;
 
   return (
     <div className="mx-auto max-w-2xl p-4 md:p-6">
@@ -32,6 +42,7 @@ export default function NewItemPage() {
           ) : (
             <ItemForm
               groups={groups}
+              defaultGroupId={defaultGroupId}
               onSuccess={() => {
                 router.push("/");
                 router.refresh();

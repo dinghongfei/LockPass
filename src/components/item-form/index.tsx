@@ -23,6 +23,8 @@ import { isUserGroup } from "@/lib/system-groups";
 
 interface ItemFormProps {
   groups: Group[];
+  /** Preferred group when creating (ignored for edit via `initial`). */
+  defaultGroupId?: string;
   initial?: {
     id?: string;
     groupId: string;
@@ -72,13 +74,39 @@ const emptyPayloads: Record<ItemType, Record<string, string>> = {
   },
 };
 
-export function ItemForm({ groups, initial, onSuccess, onCancel }: ItemFormProps) {
+function resolveDefaultGroupId(
+  selectableGroups: Group[],
+  initialGroupId?: string,
+  preferredGroupId?: string
+): string {
+  if (initialGroupId && isUserGroup({ id: initialGroupId })) {
+    return initialGroupId;
+  }
+  if (
+    preferredGroupId &&
+    isUserGroup({ id: preferredGroupId }) &&
+    selectableGroups.some((g) => g.id === preferredGroupId)
+  ) {
+    return preferredGroupId;
+  }
+  return selectableGroups[0]?.id || "";
+}
+
+export function ItemForm({
+  groups,
+  defaultGroupId,
+  initial,
+  onSuccess,
+  onCancel,
+}: ItemFormProps) {
   const t = useT();
   const selectableGroups = groups.filter(isUserGroup);
-  const [groupId, setGroupId] = useState(
-    initial?.groupId && isUserGroup({ id: initial.groupId })
-      ? initial.groupId
-      : selectableGroups[0]?.id || ""
+  const [groupId, setGroupId] = useState(() =>
+    resolveDefaultGroupId(
+      selectableGroups,
+      initial?.groupId,
+      defaultGroupId
+    )
   );
   const [type, setType] = useState<ItemType>(initial?.type || "website");
   const [name, setName] = useState(initial?.name || "");

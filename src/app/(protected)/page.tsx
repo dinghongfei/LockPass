@@ -105,6 +105,11 @@ export default function DashboardPage() {
     setGroupsOpen(false);
   };
 
+  const newItemHref =
+    selectedGroupId !== null && !isSystemDiscardedGroup(selectedGroupId)
+      ? `/items/new?groupId=${encodeURIComponent(selectedGroupId)}`
+      : "/items/new";
+
   return (
     <div className="relative mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-7xl">
       {groupsOpen && (
@@ -169,7 +174,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <Button asChild className="w-full sm:w-auto">
-            <Link href="/items/new">
+            <Link href={newItemHref}>
               <Plus className="mr-1 h-4 w-4" />
               {t("dashboard.newItem")}
             </Link>
@@ -181,7 +186,7 @@ export default function DashboardPage() {
             <p className="text-muted-foreground">{emptyMessage}</p>
             {items.length === 0 && (
               <Button asChild className="mt-4">
-                <Link href="/items/new">{t("dashboard.createFirst")}</Link>
+                <Link href={newItemHref}>{t("dashboard.createFirst")}</Link>
               </Button>
             )}
           </div>
