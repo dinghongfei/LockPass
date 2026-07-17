@@ -46,7 +46,7 @@ export function SshCommandList({
             </code>
             <button
               type="button"
-              className="shrink-0 rounded-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="shrink-0 cursor-pointer rounded-sm text-muted-foreground transition-colors hover:text-foreground"
               aria-label={
                 copiedIndex === index ? t("common.copied") : t("common.copy")
               }

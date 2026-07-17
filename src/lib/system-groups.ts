@@ -2,6 +2,8 @@ import type { StoredGroup } from "@/lib/storage/provider";
 
 export const DISCARDED_GROUP_ID = "__system_discarded__";
 export const DISCARDED_GROUP_NAME = "已废弃";
+export const GROUP_NAME_MIN_LENGTH = 1;
+export const GROUP_NAME_MAX_LENGTH = 10;
 
 export function isSystemDiscardedGroup(groupId: string): boolean {
   return groupId === DISCARDED_GROUP_ID;

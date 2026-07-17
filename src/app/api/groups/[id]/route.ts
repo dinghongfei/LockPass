@@ -3,8 +3,14 @@ import { z } from "zod";
 import { requireAuth } from "@/lib/auth/session";
 import { getStorage } from "@/lib/storage";
 import { badRequest, notFound, serverError, unauthorized } from "@/lib/api-utils";
+import {
+  GROUP_NAME_MAX_LENGTH,
+  GROUP_NAME_MIN_LENGTH,
+} from "@/lib/system-groups";
 
-const updateSchema = z.object({ name: z.string().min(1).max(100) });
+const updateSchema = z.object({
+  name: z.string().trim().min(GROUP_NAME_MIN_LENGTH).max(GROUP_NAME_MAX_LENGTH),
+});
 
 export async function PUT(
   request: NextRequest,

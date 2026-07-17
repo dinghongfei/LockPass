@@ -39,3 +39,18 @@ body {
 * {
   border-color: var(--border);
 }
+
+button:enabled,
+[type="button"]:enabled,
+[type="submit"]:enabled,
+[type="reset"]:enabled,
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+[type="button"]:disabled,
+[type="submit"]:disabled,
+[type="reset"]:disabled {
+  cursor: not-allowed;
+}

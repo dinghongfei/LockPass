@@ -78,7 +78,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, InputProps>(
               type="button"
               tabIndex={-1}
               onClick={handleClear}
-              className="rounded-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="cursor-pointer rounded-sm text-muted-foreground transition-colors hover:text-foreground"
               aria-label={t("sensitive.clear")}
             >
               <X className="h-4 w-4" />
@@ -87,7 +87,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, InputProps>(
           <button
             type="button"
             tabIndex={-1}
-            className="select-none rounded-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="cursor-pointer select-none rounded-sm text-muted-foreground transition-colors hover:text-foreground"
             aria-label={t("sensitive.holdToRevealPassword")}
             onMouseDown={(e) => {
               e.preventDefault();

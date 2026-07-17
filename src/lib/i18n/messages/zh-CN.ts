@@ -9,7 +9,6 @@ export const zhCN: MessageTree = {
   common: {
     cancel: "取消",
     create: "创建",
-    update: "更新",
     save: "保存",
     saving: "保存中...",
     delete: "删除",
@@ -34,6 +33,8 @@ export const zhCN: MessageTree = {
     generator: "生成密码",
     importExport: "导入导出",
     logout: "退出",
+    openMenu: "打开菜单",
+    closeMenu: "关闭菜单",
   },
   login: {
     username: "用户名",
@@ -57,7 +58,11 @@ export const zhCN: MessageTree = {
     allItems: "全部条目",
     discarded: "已废弃",
     newGroup: "新建分组",
+    editGroup: "编辑分组",
     namePlaceholder: "分组名称",
+    nameLengthHint: "{min}–{max} 个字符",
+    filterBy: "分组：{name}",
+    closePanel: "关闭分组",
     deleteTitle: "删除分组",
     deleteFailed: "删除失败",
     deleteHint: "删除分组",

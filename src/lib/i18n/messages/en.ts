@@ -9,7 +9,6 @@ export const en: MessageTree = {
   common: {
     cancel: "Cancel",
     create: "Create",
-    update: "Update",
     save: "Save",
     saving: "Saving...",
     delete: "Delete",
@@ -34,6 +33,8 @@ export const en: MessageTree = {
     generator: "Generator",
     importExport: "Import / Export",
     logout: "Log out",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
   },
   login: {
     username: "Username",
@@ -57,7 +58,11 @@ export const en: MessageTree = {
     allItems: "All entries",
     discarded: "Discarded",
     newGroup: "New group",
+    editGroup: "Edit group",
     namePlaceholder: "Group name",
+    nameLengthHint: "{min}–{max} characters",
+    filterBy: "Group: {name}",
+    closePanel: "Close groups",
     deleteTitle: "Delete group",
     deleteFailed: "Delete failed",
     deleteHint: "Delete group",

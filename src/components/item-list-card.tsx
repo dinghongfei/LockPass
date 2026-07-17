@@ -43,7 +43,7 @@ function ListCopyField({
 
   return (
     <div className="flex min-w-0 items-center gap-2 text-sm">
-      <span className="w-20 shrink-0 text-muted-foreground">{label}</span>
+      <span className="w-16 shrink-0 text-muted-foreground sm:w-20">{label}</span>
       <div className="flex min-w-0 flex-1 items-center gap-1">
         <span
           className={cn("min-w-0 truncate", sensitive && "font-mono")}
@@ -54,7 +54,7 @@ function ListCopyField({
         {copyable && (
           <button
             type="button"
-            className="shrink-0 rounded-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="shrink-0 cursor-pointer rounded-sm text-muted-foreground transition-colors hover:text-foreground"
             aria-label={
               copied ? t("common.copied") : t("common.copyLabel", { label })
             }

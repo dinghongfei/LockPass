@@ -80,21 +80,10 @@ export function SensitiveValue({
         </span>
       )}
       <div className="flex shrink-0 items-center gap-1">
-        {copyable && (
-          <button
-            type="button"
-            tabIndex={-1}
-            className="rounded-sm text-muted-foreground transition-colors hover:text-foreground"
-            aria-label={copied ? t("common.copied") : t("common.copy")}
-            onClick={handleCopy}
-          >
-            <Copy className="h-4 w-4" />
-          </button>
-        )}
         <button
           type="button"
           tabIndex={-1}
-          className="select-none rounded-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="cursor-pointer select-none rounded-sm text-muted-foreground transition-colors hover:text-foreground"
           aria-label={t("sensitive.holdToReveal")}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerRelease}
@@ -102,6 +91,17 @@ export function SensitiveValue({
         >
           <Eye className="h-4 w-4" />
         </button>
+        {copyable && (
+          <button
+            type="button"
+            tabIndex={-1}
+            className="cursor-pointer rounded-sm text-muted-foreground transition-colors hover:text-foreground"
+            aria-label={copied ? t("common.copied") : t("common.copy")}
+            onClick={handleCopy}
+          >
+            <Copy className="h-4 w-4" />
+          </button>
+        )}
         {copied && (
           <span className="text-xs text-muted-foreground">{t("common.copied")}</span>
         )}

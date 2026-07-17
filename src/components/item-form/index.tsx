@@ -310,15 +310,21 @@ export function ItemForm({ groups, initial, onSuccess, onCancel }: ItemFormProps
         />
       </div>
 
-      <div className="flex gap-3">
-        <Button type="submit" disabled={loading}>
+      <div className="flex flex-col-reverse gap-3 sm:flex-row">
+        <Button type="submit" disabled={loading} className="w-full sm:w-auto">
           {loading
             ? t("common.saving")
             : initial?.id
-              ? t("common.update")
+              ? t("common.save")
               : t("common.create")}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={loading}
+          className="w-full sm:w-auto"
+        >
           {t("common.cancel")}
         </Button>
       </div>
