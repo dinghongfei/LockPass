@@ -225,6 +225,11 @@ export const DEFAULT_PASSWORD_OPTIONS: PasswordGeneratorOptions = {
   excludeAmbiguous: true,
 };
 
+/** Optional prefixes prepended to the generated random part (empty = none). */
+export const PASSWORD_PREFIX_OPTIONS = ["", "sk-", "pk-", "ak-"] as const;
+
+export type PasswordPrefix = (typeof PASSWORD_PREFIX_OPTIONS)[number];
+
 export const ITEM_TYPE_LABELS: Record<ItemType, string> = {
   website: "网站",
   card: "个人卡券",

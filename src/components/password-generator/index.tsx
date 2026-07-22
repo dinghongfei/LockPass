@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Copy, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,9 @@ import { copyText } from "@/lib/clipboard";
 import { useT } from "@/lib/i18n/provider";
 import {
   DEFAULT_PASSWORD_OPTIONS,
+  PASSWORD_PREFIX_OPTIONS,
   type PasswordGeneratorOptions,
+  type PasswordPrefix,
 } from "@/lib/types";
 
 interface PasswordGeneratorProps {
@@ -26,9 +28,15 @@ export function PasswordGenerator({
   const [options, setOptions] = useState<PasswordGeneratorOptions>(
     DEFAULT_PASSWORD_OPTIONS
   );
-  const [password, setPassword] = useState("");
+  const [prefix, setPrefix] = useState<PasswordPrefix>("");
+  const [generated, setGenerated] = useState("");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+
+  const password = useMemo(
+    () => `${prefix}${generated}`,
+    [prefix, generated]
+  );
 
   const generate = useCallback(async () => {
     setError("");
@@ -43,7 +51,7 @@ export function PasswordGenerator({
         setError(data.error || t("generator.failed"));
         return;
       }
-      setPassword(data.password);
+      setGenerated(data.password);
     } catch {
       setError(t("generator.failed"));
     }
@@ -77,13 +85,27 @@ export function PasswordGenerator({
 
   return (
     <div className={compact ? "space-y-4" : "space-y-6"}>
-      <div className="flex items-center gap-2">
-        <Input
-          readOnly
-          value={password}
-          className="font-mono text-base"
-          placeholder={t("generator.placeholder")}
-        />
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <select
+            aria-label={t("generator.prefix")}
+            className="h-9 shrink-0 rounded-md border border-border bg-card px-2 font-mono text-sm"
+            value={prefix}
+            onChange={(e) => setPrefix(e.target.value as PasswordPrefix)}
+          >
+            {PASSWORD_PREFIX_OPTIONS.map((value) => (
+              <option key={value || "none"} value={value}>
+                {value === "" ? t("generator.prefixNone") : value}
+              </option>
+            ))}
+          </select>
+          <Input
+            readOnly
+            value={password}
+            className="min-w-0 flex-1 font-mono text-base"
+            placeholder={t("generator.placeholder")}
+          />
+        </div>
         <Button type="button" variant="outline" onClick={generate}>
           <RefreshCw className="h-4 w-4" />
           {t("common.refresh")}

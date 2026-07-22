@@ -142,6 +142,8 @@ export const zhCN: MessageTree = {
     subtitle: "独立使用密码生成功能，也可在创建条目时快捷调用",
     placeholder: "生成的密码",
     failed: "生成失败",
+    prefix: "前缀",
+    prefixNone: "None",
     length: "密码长度",
     minNumbers: "数字最小长度",
     minSpecial: "特殊符号最小长度",

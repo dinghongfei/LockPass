@@ -145,6 +145,8 @@ export const en: MessageTree = {
       "Use standalone, or open it quickly while creating an entry",
     placeholder: "Generated password",
     failed: "Generation failed",
+    prefix: "Prefix",
+    prefixNone: "None",
     length: "Length",
     minNumbers: "Min digits",
     minSpecial: "Min special characters",
