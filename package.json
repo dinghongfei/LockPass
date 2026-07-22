@@ -11,6 +11,7 @@
     "start:text": "STORAGE_TYPE=text next start",
     "start:db": "STORAGE_TYPE=database next start",
     "hash-password": "tsx scripts/hash-password.ts",
+    "hash-api-key": "tsx scripts/hash-api-key.ts",
     "lint": "eslint"
   },
   "dependencies": {

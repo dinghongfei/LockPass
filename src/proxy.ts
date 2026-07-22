@@ -2,14 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
 import { sessionOptions, SessionData } from "@/lib/auth/session";
 
-const publicPaths = ["/login", "/api/auth/login"];
+const publicExactPaths = ["/login", "/api/auth/login"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
-    publicPaths.some((p) => pathname === p || pathname.startsWith("/_next")) ||
-    pathname.startsWith("/favicon")
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/favicon") ||
+    pathname.startsWith("/api/openapi/") ||
+    publicExactPaths.includes(pathname)
   ) {
     return NextResponse.next();
   }

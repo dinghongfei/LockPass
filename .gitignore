@@ -42,6 +42,7 @@ nohup.out
 
 # production / server-local user overrides (keep defaults in users.json)
 /config/users.local.json
+/config/api-clients.local.json
 
 # vercel
 .vercel

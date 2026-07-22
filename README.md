@@ -19,6 +19,7 @@ Full project documentation: [WIKI.md](WIKI.md) ([中文 Wiki](WIKI.zh-CN.md)).
 - System “Discarded” group: discarded entries are kept, never hard-deleted
 - Pluggable storage: text file, SQLite (default), PostgreSQL
 - Preconfigured users (no self-registration)
+- External OpenAPI for password generation (per-caller API keys, purpose required, call logging)
 
 ## Quick start (local development)
 
@@ -174,8 +175,84 @@ When using PostgreSQL, set `DATABASE_URL` in `.env.local`.
 | `SESSION_SECRET` | Session encryption secret | required |
 | `SECURE_COOKIES` | Cookie `secure` flag | `false` |
 | `USERS_FILE` | Users file path (overrides default resolution) | empty → users.local.json → users.json |
+| `API_CLIENTS_FILE` | OpenAPI clients file path | empty → api-clients.local.json → api-clients.json |
 | `DATABASE_URL` | PostgreSQL connection string | required in `database` mode |
 | `DATA_DIR` | Local data directory | `./data` |
+
+## Password generation OpenAPI
+
+For other systems to generate passwords without a browser session.
+
+### Default example key
+
+[`config/api-clients.json`](config/api-clients.json) ships with an example client that is **enabled** and uses this plaintext API key:
+
+```text
+sk-lockpass
+```
+
+You can call the API locally with `Authorization: Bearer sk-lockpass` without further setup.
+
+**Do not use `sk-lockpass` in production** — generate a new key with `npm run hash-api-key`, put the hash in `config/api-clients.local.json`, and restart.
+
+### Configure callers
+
+1. Generate an API key and hash (defaults to an `sk-` prefixed key):
+
+```bash
+npm run hash-api-key
+```
+
+Output includes `apiKey` (save once) and `apiKeyHash` (put in config). You can also pass a custom secret; if it has no `sk-` prefix, one is added:
+
+```bash
+npm run hash-api-key -- my-custom-secret
+```
+
+2. Copy and edit the clients file (production should use the gitignored local file):
+
+```bash
+cp config/api-clients.json config/api-clients.local.json
+```
+
+```json
+[
+  {
+    "id": "crm",
+    "name": "CRM System",
+    "apiKeyHash": "$2b$10$...",
+    "enabled": true
+  }
+]
+```
+
+3. Restart the app after changing clients.
+
+### Call the API
+
+- Spec: `GET /api/openapi/v1/openapi.json`
+- Generate: `POST /api/openapi/v1/password/generate`
+- Auth: `Authorization: Bearer <api-key>`
+- Body must include `purpose` (why the password is generated)
+
+```bash
+curl -sS -X POST "http://localhost:3000/api/openapi/v1/password/generate" \
+  -H "Authorization: Bearer sk-lockpass" \
+  -H "Content-Type: application/json" \
+  -d '{"purpose":"provisioning user for CRM","prefix":"sk-","length":16}'
+```
+
+(Replace `sk-lockpass` with your own key after rotating credentials.)
+
+Example response:
+
+```json
+{ "password": "sk-...", "requestId": "..." }
+```
+
+### Call logs
+
+Every call is appended to `{DATA_DIR}/openapi-password-calls.jsonl` (default `./data/openapi-password-calls.jsonl`), including the **plaintext password**, caller id/name, purpose, options, IP, and success/failure. Treat this file as highly sensitive.
 
 ## Security notes
 
@@ -184,6 +261,7 @@ When using PostgreSQL, set `DATABASE_URL` in `.env.local`.
 - Over plain HTTP, data is visible on the wire — use only on trusted networks
 - Exported JSON contains plaintext secrets; handle carefully
 - Anyone with `ENCRYPTION_KEY` can decrypt the vault
+- OpenAPI password call logs store plaintext passwords — restrict filesystem access to `{DATA_DIR}/openapi-password-calls.jsonl`
 
 ## Tech stack
 
